@@ -179,9 +179,8 @@ def generatefitmatrix (variables, featurenames, targetname, fraction, energies):
 
 def doBDT(rqvarnames, rrqvarnames, newvarinfo, calibpath, mergepath, initpath, savepath, det=14):
     # Loading in data from files
-    # calib = uproot.open(calibpath)["rrqDir"]["calibzip%d"%(det)]
-    calib = uproot.open(calibpath)
-    print(calib["G4SimDir"].keys())
+    calib = uproot.open(calibpath)["rrqDir"]["calibzip%d"%(det)]
+    # calib = uproot.open(calibpath)
 
     merge = uproot.open(mergepath)["rqDir"]["zip%d"%(det)]
         
@@ -337,14 +336,14 @@ rqvarnames = ["PTNFchisq"]
 rrqvarnames = ["pxpartOF1X2", "pypartOF1X2", "prpartOF1X2", "pxdelWK", "pydelWK", "prdelWK"]
 newvarnames = ["PXTFPchisq", "PYTFPchisq"]
 newvarinputs = [["PDTFPchisq", "PBTFPchisq", "PCTFPchisq"], ["PDTFPchisq", "PBTFPchisq", "PCTFPchisq"]]
-newvarfuncs = [lambda args: (cos(radians(30))*args[0] + cos(radians(150))*args[1] + cos(radians(270))*args[2])
-              , lambda args: (sin(radians(30))*args[0] + sin(radians(150))*args[1] + sin(radians(270))*args[2])]
+newvarfuncs = [lambda args: (cos(radians(30))*args[0] + cos(radians(150))*args[1] + cos(radians(270))*args[2]),
+               lambda args: (sin(radians(30))*args[0] + sin(radians(150))*args[1] + sin(radians(270))*args[2])]
 newvarinfo = {"names": [], "inputs": [], "funcs": []}
 
 # calibpath = "calib_LibSimProdv5-6_pn_Sb_T5Z2.root"
-calibpath = "../G4MC_00191124/G4MC_00191105_SbBe_4.root"
-mergepath = "merge_LibSimProdv5-6_pn_Sb_T5Z2.root"
-initpath = "PhotoNeutronDMC_InitialTest10K_jswfix.mat"
+calibpath = "../../data/calib_LibSimProdv5-4_pn_Sb_T5Z2.root"
+mergepath = "../../data/merge_LibSimProdv5-4_pn_Sb_T5Z2.root"
+initpath = "../../data/PhotoNeutronDMC_InitialTest10K_jswfix.mat"
 savepath = "figs/bdt_all_scatters/"
 
 if __name__ == '__main__':
