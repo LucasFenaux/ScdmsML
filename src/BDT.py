@@ -341,9 +341,9 @@ newvarfuncs = [lambda args: (cos(radians(30))*args[0] + cos(radians(150))*args[1
 newvarinfo = {"names": [], "inputs": [], "funcs": []}
 
 # calibpath = "calib_LibSimProdv5-6_pn_Sb_T5Z2.root"
-calibpath = "../../data/calib_LibSimProdv5-4_pn_Sb_T5Z2.root"
-mergepath = "../../data/merge_LibSimProdv5-4_pn_Sb_T5Z2.root"
-initpath = "../../data/PhotoNeutronDMC_InitialTest10K_jswfix.mat"
+calibpath = "../data/calib_LibSimProdv5-4_pn_Sb_T5Z2.root"
+mergepath = "../data/merge_LibSimProdv5-4_pn_Sb_T5Z2.root"
+initpath = "../data/PhotoNeutronDMC_InitialTest10K_jswfix.mat"
 savepath = "figs/bdt_all_scatters/"
 
 if __name__ == '__main__':
