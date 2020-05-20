@@ -1,6 +1,6 @@
 from math import cos, sin, radians
 import numpy as np
-from ScmdsML.src.utils import data_loader
+from ScdmsML.src.utils import data_loader
 from sklearn.decomposition import PCA
 import os
 

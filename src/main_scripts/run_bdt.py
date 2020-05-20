@@ -2,7 +2,7 @@ from math import cos, sin, radians
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier
-from ScmdsML.src.utils import data_loader, plot_output
+from ScdmsML.src.utils import data_loader, plot_output
 import os
 
 # Global Variable
