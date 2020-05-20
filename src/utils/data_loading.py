@@ -1,20 +1,24 @@
 import numpy as np
 from scipy.io import loadmat
 import uproot
-from .misc import cut_energy
+from .misc import cut_energy, generate_fit_matrix
+import os
+
+calib_path = os.path.relpath("../../data/calib_LibSimProdv5-4_pn_Sb_T5Z2.root")
+merge_path = os.path.relpath("../../data/merge_LibSimProdv5-4_pn_Sb_T5Z2.root")
+init_path = os.path.relpath("../../data/PhotoNeutronDMC_InitialTest10K_jswfix.mat")
 
 
-def data_loader(rq_var_names, rrq_var_names, new_var_info, calib_path, merge_path, init_path, det=14):
+def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, det=14):
     # Loading in data from files
     calib = uproot.open(calib_path)["rrqDir"]["calibzip{}".format(det)]
-    # calib = uproot.open(calibpath)
 
     merge = uproot.open(merge_path)["rqDir"]["zip{}".format(det)]
 
     variables = get_branches(merge, rq_var_names, merge)
     variables = merge_variables(variables, get_branches(merge, rrq_var_names, calib), rrq_var_names)
 
-    scatters, single_scatter = get_num_scatters(init_path)
+    scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path)
     variables = add_to_variables(variables, "Single?", single_scatter)
 
     energies = get_branches(merge, ["ptNF"], calib, normalize=False)
@@ -29,10 +33,15 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, calib_path, merge_pat
             in_vars = get_branches(merge, in_var_names, merge)
             variables = calculate_variable(variables, name, in_var_names, in_vars, func)
 
-    return variables, energies
+    train_data, train_targets, test_data, test_targets, test_dict = generate_fit_matrix(variables, rq_var_names +
+                                                                                        rrq_var_names +
+                                                                                        new_var_info["names"],
+                                                                                        "Single?", 0.8, energies)
+
+    return train_data, train_targets, test_data, test_targets, test_dict, variables
 
 
-def get_num_scatters(init_path, det=14, write=True):
+def get_num_scatters(init_path, save_path, det=14, write=True):
     init = loadmat(init_path)
     # Get event number for each scatter
     ev_of_scatter = init["EV"][:, 0] + 1  # +1 here because starts at 0
@@ -84,7 +93,7 @@ def get_num_scatters(init_path, det=14, write=True):
 
     # Write to file if requested. True by default
     if write:
-        scatter_out = open("numscatters.txt", "w")
+        scatter_out = open(save_path, "w")
         scatter_out.write("EventNumber NumberOfScatters\n")
         for ev in num_scatters:
             scatter_out.write("{} {}\n".format(ev, num_scatters[ev]))
