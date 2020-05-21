@@ -53,7 +53,7 @@ def do_k_clustering(k=2, pca=0):
 
 def visualize_k_clustering(reduced_data, targets, kmeans, dims, k):
     if dims == 2:
-        visualize_2d(reduced_data, kmeans)
+        visualize_2d(reduced_data, targets, kmeans)
     elif dims == 3:
         visualize_3d(reduced_data, targets, kmeans, k)
     else:
@@ -78,9 +78,6 @@ def visualize_3d(reduced_data, targets, kmeans, k):
     ax.w_xaxis.set_ticklabels([])
     ax.w_yaxis.set_ticklabels([])
     ax.w_zaxis.set_ticklabels([])
-    ax.set_xlabel('Petal width')
-    ax.set_ylabel('Sepal length')
-    ax.set_zlabel('Petal length')
     ax.set_title(title)
     ax.dist = 12
     fignum = fignum + 1
@@ -106,9 +103,6 @@ def visualize_3d(reduced_data, targets, kmeans, k):
     ax.w_xaxis.set_ticklabels([])
     ax.w_yaxis.set_ticklabels([])
     ax.w_zaxis.set_ticklabels([])
-    ax.set_xlabel('Petal width')
-    ax.set_ylabel('Sepal length')
-    ax.set_zlabel('Petal length')
     ax.set_title('Ground Truth')
     ax.dist = 12
 
@@ -116,7 +110,7 @@ def visualize_3d(reduced_data, targets, kmeans, k):
     fig.savefig("../results/figs/3D_clusters_ground_truth.png")
 
 
-def visualize_2d(reduced_data, kmeans):
+def visualize_2d(reduced_data, targets, kmeans):
     # Step size of the mesh. Decrease to increase the quality of the VQ.
     h = .02  # point in the mesh [x_min, x_max]x[y_min, y_max].
 
@@ -143,13 +137,30 @@ def visualize_2d(reduced_data, kmeans):
     plt.scatter(centroids[:, 0], centroids[:, 1],
                 marker='x', s=169, linewidths=3,
                 color='w', zorder=10)
-    plt.title('K-means clustering on the digits dataset (PCA-reduced data)\n'
-              'Centroids are marked with white cross')
+    plt.title('Predicted clusters. Centroids marked as white X')
     plt.xlim(x_min, x_max)
     plt.ylim(y_min, y_max)
     plt.xticks(())
     plt.yticks(())
     plt.savefig("../results/figs/2D_clusters_predicted.png")
+    plt.show()
+
+    # Plot Ground Truth
+    plt.figure(2)
+    plt.clf()
+    Z = np.array(targets)
+    # plt.imshow(reduced_data, c=Z, interpolation='nearest',
+    #            extent=(xx.min(), xx.max(), yy.min(), yy.max()),
+    #            cmap=plt.cm.Paired,
+    #            aspect='auto', origin='lower')
+    y = np.choose(Z, [1, 0, 2]).astype(np.float)
+    plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=y, edgecolors="k")
+    plt.title("Ground Truth")
+    plt.xlim(x_min, x_max)
+    plt.ylim(y_min, y_max)
+    plt.xticks(())
+    plt.yticks(())
+    plt.savefig("../results/figs/2D_clusters_ground_truth.png")
     plt.show()
 
 
