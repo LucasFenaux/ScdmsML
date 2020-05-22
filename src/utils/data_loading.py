@@ -3,6 +3,9 @@ from scipy.io import loadmat
 import uproot
 from .misc import cut_energy, generate_fit_matrix
 import os
+import torch
+from torch.utils.data import TensorDataset, RandomSampler, DataLoader
+
 
 calib_path = os.path.relpath("../../data/calib_LibSimProdv5-4_pn_Sb_T5Z2.root")
 merge_path = os.path.relpath("../../data/merge_LibSimProdv5-4_pn_Sb_T5Z2.root")
@@ -39,6 +42,33 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
                                                                                         "Single?", 0.8, energies)
 
     return train_data, train_targets, test_data, test_targets, test_dict, variables
+
+
+def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, det=14, batch_size=256,
+                      num_workers=1, pin_memory=False):
+    train_data, train_targets, test_data, test_targets, test_dict, variables = data_loader(rq_var_names, rrq_var_names,
+                                                                                           new_var_info,
+                                                                                           num_scatter_save_path,
+                                                                                           det=14)
+    train_data = torch.Tensor(train_data)
+    train_targets = torch.Tensor(train_targets)
+    train_targets = torch.nn.functional.one_hot(train_targets.to(torch.int64))
+
+    test_data = torch.Tensor(test_data)
+    test_targets = torch.Tensor(test_targets)
+    test_targets = torch.nn.functional.one_hot(test_targets.to(torch.int64))
+
+    train_dataset = TensorDataset(train_data, train_targets)
+    train_sampler = RandomSampler(train_dataset)
+    train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
+                              pin_memory=pin_memory)
+
+    test_dataset = TensorDataset(test_data, test_targets)
+    test_sampler = RandomSampler(test_dataset)
+    test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
+                             pin_memory=pin_memory)
+
+    return train_loader, test_loader
 
 
 def get_num_scatters(init_path, save_path, det=14, write=True):

@@ -149,10 +149,6 @@ def visualize_2d(reduced_data, targets, kmeans):
     plt.figure(2)
     plt.clf()
     Z = np.array(targets)
-    # plt.imshow(reduced_data, c=Z, interpolation='nearest',
-    #            extent=(xx.min(), xx.max(), yy.min(), yy.max()),
-    #            cmap=plt.cm.Paired,
-    #            aspect='auto', origin='lower')
     y = np.choose(Z, [1, 0, 2]).astype(np.float)
     plt.scatter(reduced_data[:, 0], reduced_data[:, 1], c=y, edgecolors="k")
     plt.title("Ground Truth")
@@ -165,4 +161,4 @@ def visualize_2d(reduced_data, targets, kmeans):
 
 
 if __name__ == '__main__':
-    do_k_clustering(k=2, pca=3)
+    do_k_clustering(k=2, pca=6)
