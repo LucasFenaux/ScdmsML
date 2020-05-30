@@ -24,11 +24,12 @@ def train_nn(batch_loader: DataLoader, model: torch.nn.Module, criterion, optimi
         data_time.update(time.time() - end)
 
         inputs = inputs.to(device)
-        target = target.to(device)
-        output = model(inputs)
+        target = target.to(device).to(torch.double)
+        output = model(inputs).to(torch.double)
+        # print(output.to(torch.device("cpu")), target.to(torch.device("cpu")))
 
-        # cast to double otherwise BCE is not happy
-        total_loss = criterion(output.to(torch.double), target.to(torch.double))
+        # cast to double otherwise BCE/MSE is not happy
+        total_loss = criterion(output, target)
 
         # Record loss
         losses.update(total_loss.item(), inputs.size(0))

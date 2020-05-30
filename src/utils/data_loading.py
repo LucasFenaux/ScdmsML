@@ -5,6 +5,7 @@ from .misc import cut_energy, generate_fit_matrix
 import os
 import torch
 from torch.utils.data import TensorDataset, RandomSampler, DataLoader
+from sklearn.decomposition import PCA
 
 
 calib_path = os.path.relpath("../../data/calib_LibSimProdv5-4_pn_Sb_T5Z2.root")
@@ -45,11 +46,16 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
 
 
 def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, det=14, batch_size=256,
-                      num_workers=1, pin_memory=False):
+                      num_workers=1, pin_memory=False, with_pca=0):
     train_data, train_targets, test_data, test_targets, test_dict, variables = data_loader(rq_var_names, rrq_var_names,
                                                                                            new_var_info,
                                                                                            num_scatter_save_path,
                                                                                            det=14)
+    if with_pca != 0:
+        pca = PCA(n_components=with_pca)
+        train_data = pca.fit_transform(train_data)
+        test_data = pca.transform(test_data)
+
     train_data = torch.Tensor(train_data)
     train_targets = torch.Tensor(train_targets)
     train_targets = torch.nn.functional.one_hot(train_targets.to(torch.int64))
@@ -135,9 +141,9 @@ def get_num_scatters(init_path, save_path, det=14, write=True):
 def get_branches(merge, branches, tree=None, normalize=True):
     if tree is None:
         tree = merge
-
+    # print(tree.keys())
+    # print(len(tree.keys()))
     evs_raw = merge["PTSIMEventNumber"].array().astype(int)
-
     raw_branches = {}
     for branch in branches:
         raw_branches[branch] = tree[branch].array()
