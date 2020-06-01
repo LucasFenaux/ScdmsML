@@ -54,6 +54,11 @@ def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sav
     if with_pca != 0:
         pca = PCA(n_components=with_pca)
         train_data = pca.fit_transform(train_data)
+        components = np.array(pca.components_)
+        np.set_printoptions(suppress=True, precision=5)
+        for i in range(np.shape(components)[0]):
+            print(np.argmax(np.abs(components[i])))
+        print(components)
         test_data = pca.transform(test_data)
 
     train_data = torch.Tensor(train_data)
