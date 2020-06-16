@@ -23,7 +23,6 @@ def generate_fit_matrix(variables, feature_names, target_name, fraction, energie
     test_matrix = []
     test_targets = []
     test_dict = []
-
     for v in range(len(variables)):
         entry = variables[v]
         energy = energies[v]["ptNF"]
@@ -39,7 +38,7 @@ def generate_fit_matrix(variables, feature_names, target_name, fraction, energie
             test_matrix.append(sample)
             test_dict.append(sample_dict)
             test_targets.append(entry[target_name])
-    return matrix, targets, test_matrix, test_targets, test_dict
+    return matrix, targets, test_matrix, test_targets, test_dict, feature_names
 
 
 def plot_output(scores, split_scores, test_matrix, test_targets, test_dict, savepath):

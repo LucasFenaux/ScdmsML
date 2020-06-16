@@ -9,7 +9,8 @@ class NeuralNetwork(nn.Module):
         layers = []
         for i in range(len(sizes) - 1):
             layers.append(nn.Linear(sizes[i], sizes[i + 1]))
-            # layers.append(nn.Sigmoid())
+            layers.append(nn.ReLU())
+        del layers[-1]
         layers.append(nn.Sigmoid())
         self.layers = ListModule(*layers)
 
