@@ -8,79 +8,108 @@ from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
 
 
-calib_path = os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038.root")
-merge_path = os.path.relpath("../../data/V1_5_Photoneutron/combined/merge_test_binary_01140301_0038.root")
-init_path = os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")
+calib_paths = [os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root"),
+               os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_1.root")]
+               # os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]
+merge_paths = [os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root"),
+               os.path.relpath("../../data/V1_5_Photoneutron/combined/merge_test_binary_01140301_0038.root")]
+               # os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]
+init_paths = [os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat"),
+              os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]
+              # os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]
+
+dets = [4, 14]  # , 4]
 
 
-def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, det=14, with_pca=0):
+def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
                                                                                                           rrq_var_names,
                                                                                                           new_var_info,
-                                                                                                          num_scatter_save_path,
-                                                                                                          det=det)
+                                                                                                          num_scatter_save_path)
     if with_pca != 0:
         pca = PCA(n_components=with_pca)
         train_data = pca.fit_transform(train_data)
         components = np.array(pca.components_)
         np.set_printoptions(suppress=True, precision=5)
+        most_important_components = []
         for i in range(np.shape(components)[0]):
             most_important_comp = np.argmax(np.abs(components[i]))
+            most_important_components.append(feature_names[most_important_comp])
             print(most_important_comp, feature_names[most_important_comp])
-        print(components)
+        print(most_important_components)
         test_data = pca.transform(test_data)
     return train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names
 
 
-def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, det=14):
+def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path):
+    train_data = []
+    train_targets = []
+    test_data = []
+    test_targets = []
+    test_dict = []
+    all_variables = []
+    feature_names = []
     # Loading in data from files
-    calib = uproot.open(calib_path)["rrqDir"]["calibzip{}".format(det)]
+    for file_idx in range(min(len(calib_paths), len(merge_paths), len(init_paths), len(dets))):
+        calib_path = calib_paths[file_idx]
+        merge_path = merge_paths[file_idx]
+        init_path = init_paths[file_idx]
+        det = dets[file_idx]
 
-    merge = uproot.open(merge_path)["rqDir"]
+        calib = uproot.open(calib_path)["rrqDir"]["calibzip{}".format(det)]
 
-    variables = get_branches(merge, rq_var_names, merge["zip{}".format(det)], det=det)
-    variables = merge_variables(variables, get_branches(merge, rrq_var_names, calib), rrq_var_names)
+        merge = uproot.open(merge_path)["rqDir"]
 
-    scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path)
-    variables = add_to_variables(variables, "Single?", single_scatter)
+        variables = get_branches(merge, rq_var_names, det=det, tree=merge["zip{}".format(det)])
+        variables = merge_variables(variables, get_branches(merge, rrq_var_names, tree=calib, det=det), rrq_var_names)
 
-    energies = get_branches(merge, ["ptNF"], calib, normalize=False)
-    variables, energies = cut_energy(variables, energies, 20.)
+        scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
+        variables = add_to_variables(variables, "Single?", single_scatter)
 
-    if len(new_var_info["names"]) != 0:
-        for n in range(len(new_var_info["names"])):
-            name = new_var_info["names"][n]
-            in_var_names = new_var_info["inputs"][n]
-            func = new_var_info["funcs"][n]
+        energies = get_branches(merge, ["ptNF"], det=det, tree=calib, normalize=False)
+        variables, energies = cut_energy(variables, energies, 20.)
 
-            in_vars = get_branches(merge, in_var_names, merge)
-            variables = calculate_variable(variables, name, in_var_names, in_vars, func)
+        if len(new_var_info["names"]) != 0:
+            for n in range(len(new_var_info["names"])):
+                name = new_var_info["names"][n]
+                in_var_names = new_var_info["inputs"][n]
+                func = new_var_info["funcs"][n]
 
-    train_data, train_targets, test_data, test_targets, test_dict, feature_names = generate_fit_matrix(variables,
-                                                                                                       rq_var_names +
-                                                                                                       rrq_var_names +
-                                                                                                       new_var_info["names"],
-                                                                                                       "Single?", 0.8, energies)
+                in_vars = get_branches(merge, in_var_names, merge)
+                variables = calculate_variable(variables, name, in_var_names, in_vars, func)
 
-    return train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names
+        tr_data, tr_targets, t_data, t_targets, t_dict, features = generate_fit_matrix(variables, rq_var_names +
+                                                                                            rrq_var_names +
+                                                                                            new_var_info["names"],
+                                                                                            "Single?", 0.8, energies)
+        train_data.extend(tr_data)
+        train_targets.extend(tr_targets)
+        test_data.extend(t_data)
+        test_targets.extend(t_targets)
+        test_dict.extend(t_dict)
+        all_variables.extend(variables)
+        feature_names.extend(features)
+
+    return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
 
 
-def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, det=14, batch_size=256,
+def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, batch_size=256,
                       num_workers=1, pin_memory=False, with_pca=0):
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
                                                                                                           rrq_var_names,
                                                                                                           new_var_info,
-                                                                                                          num_scatter_save_path,
-                                                                                                          det=det)
+                                                                                                          num_scatter_save_path)
     if with_pca != 0:
         pca = PCA(n_components=with_pca)
         train_data = pca.fit_transform(train_data)
         components = np.array(pca.components_)
         np.set_printoptions(suppress=True, precision=5)
+        most_important_components = []
         for i in range(np.shape(components)[0]):
             most_important_comp = np.argmax(np.abs(components[i]))
+            most_important_components.append(feature_names[most_important_comp])
             print(most_important_comp, feature_names[most_important_comp])
-        print(components)
+        print(most_important_components)
         test_data = pca.transform(test_data)
 
     train_data = torch.Tensor(train_data)
@@ -104,7 +133,7 @@ def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sav
     return train_loader, test_loader
 
 
-def get_num_scatters(init_path, save_path, det=14, write=True):
+def get_num_scatters(init_path, save_path, det=None, write=True):
     init = loadmat(init_path)
     # Get event number for each scatter
     ev_of_scatter = init["EV"][:, 0] + 1  # +1 here because starts at 0
@@ -135,6 +164,7 @@ def get_num_scatters(init_path, save_path, det=14, write=True):
                 # increment scatter number by one
                 if det_of_scatter[i] == det:
                     scatter_energies[initial_ev].append(energy_of_scatter[i])
+
                 found = True
                 # If it's the last scatter, set last_idx so the while loop ends
                 if i == len(ev_of_scatter) - 1:
@@ -165,7 +195,7 @@ def get_num_scatters(init_path, save_path, det=14, write=True):
     return num_scatters, single_scatters
 
 
-def get_branches(merge, branches, tree=None, normalize=True, det=14):
+def get_branches(merge, branches, det=None, tree=None, normalize=True):
     if tree is None:
         tree = merge["zip{}".format(det)]
     # print(tree.keys())
