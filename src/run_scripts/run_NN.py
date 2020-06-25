@@ -181,12 +181,12 @@ criterion = torch.nn.MSELoss()  # Change to use different loss function
 
 def train_torch_model(pca=0):
     epochs = 100
-    learning_rate = 0.01
+    learning_rate = 0.1
     momentum = 0.9
     if pca != 0:
         sizes = [pca, 50, 50, 2]
     else:
-        sizes = [253, 500, 500, 100, 2]
+        sizes = [253, 200, 100, 2]
 
     nn = NeuralNetwork(sizes=sizes).to(device)
 
@@ -246,5 +246,5 @@ def error_function(model, batch_loader):
 
 
 if __name__ == '__main__':
-    # train_torch_model(0)
-    train_sklearn_model()
+    train_torch_model(0)
+    # train_sklearn_model()

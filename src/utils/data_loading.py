@@ -8,17 +8,21 @@ from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
 
 
-calib_paths = [os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root"),
-               os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_1.root")]
-               # os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]
-merge_paths = [os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root"),
-               os.path.relpath("../../data/V1_5_Photoneutron/combined/merge_test_binary_01140301_0038.root")]
-               # os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]
-init_paths = [os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat"),
-              os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]
-              # os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]
-
-dets = [4, 14]  # , 4]
+calib_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root")],
+               [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_1.root")],
+               [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
+merge_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root")],
+               [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/merge_test_binary_01140301_0038.root")],
+               [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
+init_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat")],
+              [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")],
+              [False, os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]]
+dets = [4, 14, 4]
+#
+# calib_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
+# merge_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
+# init_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]]
+# dets = [4]
 
 
 def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
@@ -51,10 +55,11 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
     feature_names = []
     # Loading in data from files
     for file_idx in range(min(len(calib_paths), len(merge_paths), len(init_paths), len(dets))):
-        calib_path = calib_paths[file_idx]
-        merge_path = merge_paths[file_idx]
-        init_path = init_paths[file_idx]
+        calib_path = calib_paths[file_idx][1]
+        merge_path = merge_paths[file_idx][1]
+        init_path = init_paths[file_idx][1]
         det = dets[file_idx]
+        is_californium = calib_paths[file_idx][0]
 
         calib = uproot.open(calib_path)["rrqDir"]["calibzip{}".format(det)]
 
@@ -64,7 +69,7 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
         variables = merge_variables(variables, get_branches(merge, rrq_var_names, tree=calib, det=det), rrq_var_names)
 
         scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
-        variables = add_to_variables(variables, "Single?", single_scatter)
+        variables = add_to_variables(variables, "Single?", single_scatter, is_californium)
 
         energies = get_branches(merge, ["ptNF"], det=det, tree=calib, normalize=False)
         variables, energies = cut_energy(variables, energies, 20.)
@@ -244,9 +249,17 @@ def get_branches(merge, branches, det=None, tree=None, normalize=True):
     return output
 
 
-def add_to_variables(variables, name, to_add):
-    for i in range(len(variables)):
-        variables[i][name] = to_add[variables[i]["EV"]]
+def add_to_variables(variables, name, to_add, is_californium):
+    num_var = len(variables)
+    i = 0
+    for key, value in to_add.items():
+        if i >= num_var:
+            break
+        if is_californium:
+            variables[i][name] = to_add[variables[i]["EV"]]
+        else:
+            variables[i][name] = value
+        i += 1
     return variables
 
 
