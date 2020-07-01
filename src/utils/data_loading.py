@@ -18,7 +18,7 @@ init_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input
               [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")],
               [False, os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]]
 dets = [4, 14, 4]
-#
+
 # calib_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
 # merge_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
 # init_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]]
@@ -30,7 +30,7 @@ def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_s
                                                                                                           rrq_var_names,
                                                                                                           new_var_info,
                                                                                                           num_scatter_save_path)
-    if with_pca != 0:
+    if with_pca > 0:
         pca = PCA(n_components=with_pca)
         train_data = pca.fit_transform(train_data)
         components = np.array(pca.components_)
@@ -53,6 +53,7 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
     test_dict = []
     all_variables = []
     feature_names = []
+
     # Loading in data from files
     for file_idx in range(min(len(calib_paths), len(merge_paths), len(init_paths), len(dets))):
         calib_path = calib_paths[file_idx][1]

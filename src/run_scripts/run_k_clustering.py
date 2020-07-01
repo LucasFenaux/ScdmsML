@@ -1,5 +1,5 @@
 from math import cos, sin, radians
-from ScdmsML.src.utils import sklearn_data_loader
+from src.utils import sklearn_data_loader
 from sklearn import metrics
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -275,4 +275,4 @@ def visualize_2d(reduced_data, targets, kmeans):
 
 
 if __name__ == '__main__':
-    do_k_clustering(k=2, pca=2)
+    do_k_clustering(k=2, pca=5)
