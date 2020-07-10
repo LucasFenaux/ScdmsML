@@ -89,8 +89,16 @@ def do_correlation():
     feature_names = feature_names[np.array(selected_columns.array())]
     print(feature_names)
     corr = data.corr()
-    sns.heatmap(corr, yticklabels=feature_names, xticklabels=feature_names)
 
+    sns.heatmap(np.trui(corr), yticklabels=feature_names, xticklabels=feature_names, annot=True, fmt='.1g',
+                vmin=-1, vmax=1, center=0, linewidths=1, linecolor='black', cbar=False)
+
+    # Print out most correlated values
+    c = corr.abs()
+    s = c.unstack()
+    so = s.sort_values(kind="quicksort")
+
+    print(so[-100:-90]) #change index here for diff print
 
 if __name__ == '__main__':
     do_correlation()
