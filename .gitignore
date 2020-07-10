@@ -4,3 +4,7 @@
 data/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat
 data/Production_Postprocessed/calib_LibSimProdv5-4_pn_Sb_T5Z2.root
 data/Production_Postprocessed/merge_LibSimProdv5-4_pn_Sb_T5Z2.root
+.idea/
+venv/
+data/
+src/results/
