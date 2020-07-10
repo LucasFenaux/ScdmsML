@@ -8,16 +8,26 @@ from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
 
 
-calib_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root")],
-               [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_1.root")],
-               [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
-merge_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root")],
-               [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/merge_test_binary_01140301_0038.root")],
-               [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
-init_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat")],
-              [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")],
-              [False, os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]]
-dets = [4, 14, 4]
+calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
+# [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/all_calib.root")]]
+    # [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
+               # [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038.root")]]
+              # [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root")],
+               # [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
+# merge_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root")],
+merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
+    # [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/all_test.root")]]
+    # [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
+               # [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/merge_test_binary_01140301_0038.root")]]
+#               [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root")],
+               # [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
+# init_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat")],
+init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+              # [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+#              [True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat")],
+              # [False, os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]]
+# dets = [4, 14, 4]
+dets = [14]
 #
 # calib_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
 # merge_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
