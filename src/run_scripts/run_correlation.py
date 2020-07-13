@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix
-from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader
+from src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader
 
 from math import cos, sin, radians
 import os
@@ -86,11 +86,12 @@ def do_correlation():
                     columns[j] = True
     selected_columns = data.columns[columns]
     data = data[selected_columns]
-    feature_names = feature_names[np.array(selected_columns.array())]
+    indexes = np.array(selected_columns.values)
+    feature_names = [feature_names[j] for j in indexes]
     print(feature_names)
     corr = data.corr()
 
-    sns.heatmap(np.trui(corr), yticklabels=feature_names, xticklabels=feature_names, annot=True, fmt='.1g',
+    sns.heatmap(np.triu(corr), yticklabels=feature_names, xticklabels=feature_names, annot=True, fmt='.1g',
                 vmin=-1, vmax=1, center=0, linewidths=1, linecolor='black', cbar=False)
 
     # Print out most correlated values
