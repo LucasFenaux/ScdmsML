@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore")
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix
-from src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader
+from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader
 
 from math import cos, sin, radians
 import os
@@ -69,15 +69,22 @@ rrq_var_names = ['paOF', 'paOF0', 'paOF0c', 'paOFc', 'paampres', 'padelayres', '
                  'ptOF0c', 'ptOF0uc', 'ptOFc', 'ptOFuc', 'pxdelWK', 'pxpartOF', 'pydelWK', 'pypartOF', 'qiOF', 'qiOF0',
                  'qoOF', 'qoOF0', 'qrpartOF', 'qsumOF']
 
+rrqs_to_check = ['paOF', 'paampres', 'padelayres', 'pbOF',
+                 'pbampres', 'pbdelayres', 'pcOF', 'pcampres', 'pcdelayres', 'pdOF',
+                 'pdampres', 'pddelayres', 'pminrtOFWK_10100', 'pminrtOFWK_1040',
+                 'pminrtOFWK_1070', 'pminrtWK_10100', 'pminrtWK_1040', 'pminrtWK_1070', 'pprimechanOF',
+                 'pprimechaniOF', 'prdelWK', 'ptNF',
+                 'ptOF', 'pxdelWK', 'pxpartOF', 'pydelWK', 'pypartOF', 'qiOF', 'qoOF', 'qrpartOF']
 
 def do_correlation():
 
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = sklearn_data_loader \
         (rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path)
 
-    data = pd.DataFrame(train_data)
+    data = pd.DataFrame(np.array(train_data, dtype=np.float))
+    print(data.isnull().values.any())
     corr = data.corr()
-    sns.heatmap(corr, yticklabels=feature_names, xticklabels=feature_names)
+    print(corr.isnull().values.any())
     columns = np.full((corr.shape[0],), True, dtype=bool)
     for i in range(corr.shape[0]):
         for j in range(i + 1, corr.shape[0]):
@@ -89,17 +96,54 @@ def do_correlation():
     indexes = np.array(selected_columns.values)
     feature_names = [feature_names[j] for j in indexes]
     print(feature_names)
+    rrqs_indices = []
+    for rrq in rrqs_to_check:
+        rrqs_indices.append(feature_names.index(rrq))
+    print(rrqs_indices)
     corr = data.corr()
 
-    sns.heatmap(np.triu(corr), yticklabels=feature_names, xticklabels=feature_names, annot=True, fmt='.1g',
-                vmin=-1, vmax=1, center=0, linewidths=1, linecolor='black', cbar=False)
+    # sns.heatmap(np.triu(corr), yticklabels=feature_names, xticklabels=feature_names, annot=True, fmt='.1g',
+    #             vmin=-1, vmax=1, center=0, linewidths=1, linecolor='black', cbar=False)
 
     # Print out most correlated values
     c = corr.abs()
     s = c.unstack()
     so = s.sort_values(kind="quicksort")
 
-    print(so[-100:-90]) #change index here for diff print
+    wanted_corr = []
+    for idx in rrqs_indices:
+        idx_corr = []
+        for i in rrqs_indices:
+            idx_corr.append(so[idx][i])
+        wanted_corr.append(idx_corr)
+    print(wanted_corr)
+    wanted_corr = np.array(wanted_corr)
+    np.save('corr_data.npy', wanted_corr)
+    heatmap = sns.heatmap(wanted_corr, yticklabels=rrqs_to_check, xticklabels=rrqs_to_check,
+                vmin=-1, vmax=1, center=0, linewidths=1, linecolor='black', cmap='Blues')
+    heatmap.figure.savefig('corr_heatmap.png')
+    print('done')
+    # print(np.argmax(so[46624]))
+    # max_idx = 0
+    # max = 0
+    # for i in range(len(so)):
+    #     if so[i] != np.NaN and so[i] > max:
+    #         max = so[i]
+    #         max_idx = i
+    #         break
+    # print(max_idx, max)
+    # print(so[-10000:-3000]) #change index here for diff print
+
+
+def do_saved_correlation():
+    corr = np.load('corr_data.npy')
+    print(corr)
+    # heatmap = sns.heatmap(corr, yticklabels=rrqs_to_check, xticklabels=rrqs_to_check,
+    #             vmin=-1, vmax=1, center=0, linewidths=1, linecolor='black', cmap='Blues')
+    heatmap = sns.heatmap(corr, vmin=-1, vmax=1, center=0, yticklabels=rrqs_to_check, xticklabels=rrqs_to_check,
+                          linecolor='black', linewidths=0.2, cmap='coolwarm')
+    heatmap.figure.savefig('corr_heatmap.png')
 
 if __name__ == '__main__':
     do_correlation()
+    # do_saved_correlation()
