@@ -1,5 +1,5 @@
 from math import cos, sin, radians
-from src.utils import sklearn_data_loader
+from ScdmsML.src.utils import sklearn_data_loader, bg70V_sklearn_dataloader
 from sklearn import metrics
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -143,19 +143,23 @@ num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 
 
 def do_k_clustering(k=2, pca=0):
-    train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = sklearn_data_loader(rq_var_names, rrq_var_names,
-                                                                                           new_var_info,
-                                                                                           num_scatter_save_path, with_pca=pca)
-
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
+        = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+    train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
     k_means = KMeans(n_init=100, max_iter=100, n_clusters=k, verbose=0).fit(train_data)
-    print("targets proportions:0:", len(train_targets) - sum(train_targets), " | 1:", sum(train_targets))
-    print("cluster centers:", k_means.cluster_centers_)
-    print("labels: ", k_means.labels_)
+    # print("targets proportions:0:", len(train_targets) - sum(train_targets), " | 1:", sum(train_targets))
+    # print("cluster centers:", k_means.cluster_centers_)
+    # print("labels: ", k_means.labels_)
     print("cluster proportions:")
     for cluster in np.unique(k_means.labels_):
         print(cluster, list(k_means.labels_).count(cluster))
     print("### Other metrics ###")
     t0 = time()
+
+    sim_preds = k_means.predict(sim_test_data)
+    print(sim_preds)
+    print("sim target proportions:0:", len(sim_test_targets) - sum(sim_test_targets), " | 1:", sum(sim_test_targets))
+    print("predicted proportions:0:", len(sim_preds) - sum(sim_preds), " | 1:", sum(sim_preds))
     # print('%-9s\t%.2fs\t%i\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f'
     #       % ("k_means", (time() - t0), k_means.inertia_,
     #          metrics.homogeneity_score(train_targets, k_means.labels_),
@@ -167,7 +171,7 @@ def do_k_clustering(k=2, pca=0):
     #                                   metric='euclidean',
     #                                   sample_size=len(train_targets))))
 
-    visualize_k_clustering(train_data, train_targets, k_means, dims=pca, k=k)
+    visualize_k_clustering(sim_test_data, sim_test_targets, k_means, dims=pca, k=k)
 
 
 def visualize_k_clustering(reduced_data, targets, kmeans, dims, k):
@@ -280,5 +284,5 @@ def visualize_2d(reduced_data, targets, kmeans):
 
 
 if __name__ == '__main__':
-    do_k_clustering(k=2, pca=30)
+    do_k_clustering(k=3, pca=3)
 

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.io import loadmat
 import uproot
-from .misc import cut_energy, generate_fit_matrix
+from .misc import cut_energy, generate_fit_matrix, generate_unsupervised_fit_matrix
 import os
 import torch
 from torch.utils.data import TensorDataset, RandomSampler, DataLoader
@@ -55,6 +55,104 @@ def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_s
     return train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names
 
 
+def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, batch_size=256,
+                      num_workers=1, pin_memory=False, with_pca=0):
+    train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
+                                                                                                          rrq_var_names,
+                                                                                                          new_var_info,
+                                                                                                          num_scatter_save_path)
+    if with_pca != 0:
+        pca = PCA(n_components=with_pca)
+        train_data = pca.fit_transform(train_data)
+        components = np.array(pca.components_)
+        np.set_printoptions(suppress=True, precision=5)
+        most_important_components = []
+        for i in range(np.shape(components)[0]):
+            most_important_comp = np.argmax(np.abs(components[i]))
+            most_important_components.append(feature_names[most_important_comp])
+            print(most_important_comp, feature_names[most_important_comp])
+        print(most_important_components)
+        test_data = pca.transform(test_data)
+
+    train_data = torch.Tensor(train_data)
+    train_targets = torch.Tensor(train_targets)
+    train_targets = torch.nn.functional.one_hot(train_targets.to(torch.int64))
+
+    test_data = torch.Tensor(test_data)
+    test_targets = torch.Tensor(test_targets)
+    test_targets = torch.nn.functional.one_hot(test_targets.to(torch.int64))
+
+    train_dataset = TensorDataset(train_data, train_targets)
+    train_sampler = RandomSampler(train_dataset)
+    train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
+                              pin_memory=pin_memory)
+
+    test_dataset = TensorDataset(test_data, test_targets)
+    test_sampler = RandomSampler(test_dataset)
+    test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
+                             pin_memory=pin_memory)
+
+    return train_loader, test_loader
+
+
+def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
+    calib_file_paths = [os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1505_bg70V_z14lite.root"),
+                        os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1505r_bg70V_z14lite.root"),
+                        os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1506_bg70V_z14lite.root")]
+    merge_file_paths = [os.path.relpath("../../data/bg70V/merge_Prodv5-6-3_1505_bg70V_z14lite.root"),
+                        os.path.relpath("../../data/bg70V/merge_Prodv5-6-3_1505r_bg70V_z14lite.root"),
+                        os.path.relpath("../../data/bg70V/merge_Prodv5-6-3_1506_bg70V_z14lite.root")]
+    file_dets = [14, 14, 14]
+
+    train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names)
+
+    if with_pca > 0:
+        pca = PCA(n_components=with_pca)
+        train_data = pca.fit_transform(train_data)
+        components = np.array(pca.components_)
+        np.set_printoptions(suppress=True, precision=5)
+        most_important_components = []
+        for i in range(np.shape(components)[0]):
+            most_important_comp = np.argmax(np.abs(components[i]))
+            most_important_components.append(feature_names[most_important_comp])
+            print(most_important_comp, feature_names[most_important_comp])
+        print(most_important_components)
+        test_data = pca.transform(test_data)
+
+    return train_data, test_data, test_dict, variables, feature_names
+
+
+def real_data_loader(rq_var_names, rrq_var_names):
+    train_data = []
+    test_data = []
+    test_dict = []
+    all_variables = []
+    feature_names = []
+    for file_idx in range(min(len(calib_paths), len(merge_paths), len(init_paths), len(dets))):
+        calib_path = calib_paths[file_idx][1]
+        merge_path = merge_paths[file_idx][1]
+        init_path = init_paths[file_idx][1]
+        det = dets[file_idx]
+        calib = uproot.open(calib_path)["rrqDir"]["calibzip{}".format(det)]
+
+        merge = uproot.open(merge_path)["rqDir"]
+        variables = get_branches(merge, rq_var_names, det=det, tree=merge["zip{}".format(det)])
+        variables = merge_variables(variables, get_branches(merge, rrq_var_names, tree=calib, det=det), rrq_var_names)
+        energies = get_branches(merge, ["ptNF"], det=det, tree=calib, normalize=False)
+
+        variables, energies = cut_energy(variables, energies, 20.)
+
+        tr_data, t_data, t_dict, features = generate_unsupervised_fit_matrix(variables, rq_var_names +
+                                                                                       rrq_var_names,
+                                                                                       0.8, energies)
+        train_data.extend(tr_data)
+        test_data.extend(t_data)
+        test_dict.extend(t_dict)
+        all_variables.extend(variables)
+        feature_names.extend(features)
+
+    return train_data, test_data, test_dict, all_variables, feature_names
+
 def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path):
     train_data = []
     train_targets = []
@@ -107,46 +205,6 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
         feature_names.extend(features)
 
     return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
-
-
-def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, batch_size=256,
-                      num_workers=1, pin_memory=False, with_pca=0):
-    train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
-                                                                                                          rrq_var_names,
-                                                                                                          new_var_info,
-                                                                                                          num_scatter_save_path)
-    if with_pca != 0:
-        pca = PCA(n_components=with_pca)
-        train_data = pca.fit_transform(train_data)
-        components = np.array(pca.components_)
-        np.set_printoptions(suppress=True, precision=5)
-        most_important_components = []
-        for i in range(np.shape(components)[0]):
-            most_important_comp = np.argmax(np.abs(components[i]))
-            most_important_components.append(feature_names[most_important_comp])
-            print(most_important_comp, feature_names[most_important_comp])
-        print(most_important_components)
-        test_data = pca.transform(test_data)
-
-    train_data = torch.Tensor(train_data)
-    train_targets = torch.Tensor(train_targets)
-    train_targets = torch.nn.functional.one_hot(train_targets.to(torch.int64))
-
-    test_data = torch.Tensor(test_data)
-    test_targets = torch.Tensor(test_targets)
-    test_targets = torch.nn.functional.one_hot(test_targets.to(torch.int64))
-
-    train_dataset = TensorDataset(train_data, train_targets)
-    train_sampler = RandomSampler(train_dataset)
-    train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
-                              pin_memory=pin_memory)
-
-    test_dataset = TensorDataset(test_data, test_targets)
-    test_sampler = RandomSampler(test_dataset)
-    test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
-                             pin_memory=pin_memory)
-
-    return train_loader, test_loader
 
 
 def get_num_scatters(init_path, save_path, det=None, write=True):

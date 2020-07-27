@@ -140,10 +140,10 @@ def do_saved_correlation():
     print(corr)
     # heatmap = sns.heatmap(corr, yticklabels=rrqs_to_check, xticklabels=rrqs_to_check,
     #             vmin=-1, vmax=1, center=0, linewidths=1, linecolor='black', cmap='Blues')
-    heatmap = sns.heatmap(corr, vmin=-1, vmax=1, center=0, yticklabels=rrqs_to_check, xticklabels=rrqs_to_check,
+    heatmap = sns.heatmap(corr, vmin=0, vmax=1, center=0, yticklabels=rrqs_to_check, xticklabels=rrqs_to_check,
                           linecolor='black', linewidths=0.2, cmap='coolwarm')
     heatmap.figure.savefig('corr_heatmap.png')
 
 if __name__ == '__main__':
-    do_correlation()
-    # do_saved_correlation()
+    # do_correlation()
+    do_saved_correlation()

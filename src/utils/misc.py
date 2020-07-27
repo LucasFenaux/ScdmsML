@@ -41,6 +41,28 @@ def generate_fit_matrix(variables, feature_names, target_name, fraction, energie
     return matrix, targets, test_matrix, test_targets, test_dict, feature_names
 
 
+def generate_unsupervised_fit_matrix(variables, feature_names, fraction, energies):
+    matrix = []
+
+    test_matrix = []
+    test_dict = []
+    for v in range(len(variables)):
+        entry = variables[v]
+        energy = energies[v]["ptNF"]
+        sample = []
+        sample_dict = {"ptNF": energy}
+        for featurename in feature_names:
+            sample.append(entry[featurename])
+            sample_dict[featurename] = entry[featurename]
+        if len(matrix) < fraction * len(variables):
+            matrix.append(sample)
+        else:
+            test_matrix.append(sample)
+            test_dict.append(sample_dict)
+
+    return matrix, test_matrix, test_dict, feature_names
+
+
 def plot_output(scores, split_scores, test_matrix, test_targets, test_dict, savepath):
     plt.hist(split_scores, 50, histtype='step', linewidth=2.0, fill=False, label=["Multiple", "Single"],
              range=(-1, 0.3))
