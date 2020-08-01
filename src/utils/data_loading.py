@@ -122,6 +122,31 @@ def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
     return train_data, test_data, test_dict, variables, feature_names
 
 
+def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
+    sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = data_loader(rq_var_names,
+                                                                                                          rrq_var_names,
+                                                                                                          new_var_info,
+                                                                                                          num_scatter_save_path)
+    train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names)
+    all_data = np.ma.concatenate([np.array(sim_train_data), np.array(train_data)], axis=0)
+    if with_pca > 0:
+        pca = PCA(n_components=with_pca)
+        pca = pca.fit(all_data)
+        components = np.array(pca.components_)
+        np.set_printoptions(suppress=True, precision=5)
+        most_important_components = []
+        for i in range(np.shape(components)[0]):
+            most_important_comp = np.argmax(np.abs(components[i]))
+            most_important_components.append(feature_names[most_important_comp])
+            print(most_important_comp, feature_names[most_important_comp])
+        print(most_important_components)
+        test_data = pca.transform(test_data)
+        sim_train_data = pca.transform(sim_train_data)
+        train_data = pca.transform(train_data)
+        sim_test_data = pca.transform(sim_test_data)
+
+    return sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names, train_data, test_data, test_dict, variables, feature_names
+
 def real_data_loader(rq_var_names, rrq_var_names):
     train_data = []
     test_data = []
@@ -152,6 +177,7 @@ def real_data_loader(rq_var_names, rrq_var_names):
         feature_names.extend(features)
 
     return train_data, test_data, test_dict, all_variables, feature_names
+
 
 def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path):
     train_data = []

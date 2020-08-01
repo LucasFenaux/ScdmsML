@@ -1,5 +1,5 @@
 from math import cos, sin, radians
-from ScdmsML.src.utils import sklearn_data_loader, bg70V_sklearn_dataloader
+from ScdmsML.src.utils import sklearn_data_loader, bg70V_sklearn_dataloader, bg70_and_sim_sklearn_dataloader
 from sklearn import metrics
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
@@ -143,13 +143,21 @@ num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 
 
 def do_k_clustering(k=2, pca=0):
-    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
-        = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
-    train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
-    k_means = KMeans(n_init=100, max_iter=100, n_clusters=k, verbose=0).fit(train_data)
+    # sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
+    #     = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+    # train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names,\
+    train_data, test_data, test_dict, variables, feature_names = bg70_and_sim_sklearn_dataloader(rq_var_names,
+                                                                                                 rrq_var_names,
+                                                                                                 new_var_info,
+                                                                                                 num_scatter_save_path,
+                                                                                                 with_pca=pca)
+    all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
+    k_means = KMeans(n_init=100, max_iter=100, n_clusters=k, verbose=0).fit(all_data)
     # print("targets proportions:0:", len(train_targets) - sum(train_targets), " | 1:", sum(train_targets))
     # print("cluster centers:", k_means.cluster_centers_)
     # print("labels: ", k_means.labels_)
+    # k_means = k_means.fit(sim_train_data)
     print("cluster proportions:")
     for cluster in np.unique(k_means.labels_):
         print(cluster, list(k_means.labels_).count(cluster))
@@ -284,5 +292,5 @@ def visualize_2d(reduced_data, targets, kmeans):
 
 
 if __name__ == '__main__':
-    do_k_clustering(k=3, pca=3)
+    do_k_clustering(k=2, pca=2)
 
