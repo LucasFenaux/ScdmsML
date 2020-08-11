@@ -251,10 +251,9 @@ def error_function(model, batch_loader):
     confusion_matrix = confusion_matrix.to(torch.device("cpu"))
     print(np.round(confusion_matrix.numpy()))
 
-    num_samples = sum(confusion_matrix.sum(1))
-    correctly_classified = sum(confusion_matrix.diag())
+    class_acc = sum(confusion_matrix.diag()) / sum(confusion_matrix.sum(1))
 
-    return correctly_classified / num_samples
+    return class_acc
 
 
 if __name__ == '__main__':

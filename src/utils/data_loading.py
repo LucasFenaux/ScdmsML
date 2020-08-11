@@ -8,26 +8,26 @@ from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
 
 
-calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
+# calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
 # [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/all_calib.root")]]
     # [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
                # [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038.root")]]
               # [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root")],
                # [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
 # merge_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root")],
-merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
+# merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
     # [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/all_test.root")]]
     # [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
                # [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/merge_test_binary_01140301_0038.root")]]
 #               [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root")],
                # [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
 # init_paths = [[True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat")],
-init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+# init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
               # [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
 #              [True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat")],
               # [False, os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]]
 # dets = [4, 14, 4]
-dets = [14]
+# dets = [14]
 #
 # calib_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
 # merge_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
@@ -120,6 +120,99 @@ def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
         test_data = pca.transform(test_data)
 
     return train_data, test_data, test_dict, variables, feature_names
+
+
+def wimp_vs_photo_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, include_real=False, with_pca=0):
+    calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root"), "photo"],
+                   [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root"), "wimp"]]
+    merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root"), "photo"],
+                   [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root"), "wimp"]]
+    init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat"), "photo"],
+                   [True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat"), "wimp"]]
+    dets = [14, 4]
+    sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = w_vs_p_data_loader(rq_var_names,
+                                                                                                                                     rrq_var_names,
+                                                                                                                                     new_var_info,
+                                                                                                                                     num_scatter_save_path,
+                                                                                                                                     calib_paths,
+                                                                                                                                     merge_paths,
+                                                                                                                                     init_paths,
+                                                                                                                                     dets)
+    if with_pca > 0:
+        pca = PCA(n_components=with_pca)
+        sim_train_data = pca.fit_transform(sim_train_data)
+        components = np.array(pca.components_)
+        np.set_printoptions(suppress=True, precision=5)
+        most_important_components = []
+        for i in range(np.shape(components)[0]):
+            most_important_comp = np.argmax(np.abs(components[i]))
+            most_important_components.append(sim_feature_names[most_important_comp])
+            print(most_important_comp, sim_feature_names[most_important_comp])
+        print(most_important_components)
+        sim_test_data = pca.transform(sim_test_data)
+    return sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names
+
+
+def w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths, init_paths, dets):
+    train_data = []
+    train_targets = []
+    test_data = []
+    test_targets = []
+    test_dict = []
+    all_variables = []
+    feature_names = []
+
+    # Loading in data from files
+    for file_idx in range(min(len(calib_paths), len(merge_paths), len(init_paths), len(dets))):
+        calib_path = calib_paths[file_idx][1]
+        merge_path = merge_paths[file_idx][1]
+        init_path = init_paths[file_idx][1]
+        det = dets[file_idx]
+        is_californium = calib_paths[file_idx][0]
+        data_type = calib_paths[file_idx][2]
+
+        calib = uproot.open(calib_path)["rrqDir"]["calibzip{}".format(det)]
+
+        merge = uproot.open(merge_path)["rqDir"]
+
+        variables = get_branches(merge, rq_var_names, det=det, tree=merge["zip{}".format(det)])
+        variables = merge_variables(variables, get_branches(merge, rrq_var_names, tree=calib, det=det), rrq_var_names)
+
+        scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
+        variables = add_to_variables(variables, "Single?", single_scatter, is_californium)
+
+        energies = get_branches(merge, ["ptNF"], det=det, tree=calib, normalize=False)
+        variables, energies = cut_energy(variables, energies, 20.)
+
+        if len(new_var_info["names"]) != 0:
+            for n in range(len(new_var_info["names"])):
+                name = new_var_info["names"][n]
+                in_var_names = new_var_info["inputs"][n]
+                func = new_var_info["funcs"][n]
+
+                in_vars = get_branches(merge, in_var_names, merge)
+                variables = calculate_variable(variables, name, in_var_names, in_vars, func)
+
+        tr_data, tr_targets, t_data, t_targets, t_dict, features = generate_fit_matrix(variables, rq_var_names +
+                                                                                       rrq_var_names +
+                                                                                       new_var_info["names"],
+                                                                                       "Single?", 0.8, energies)
+        # TODO: Make targets dependent on data_type_variable (i.e. replace tr_targets and t_targets)
+        if data_type == "wimp":
+            tr_targets = np.zeros(np.shape(tr_data)[0])
+            t_targets = np.zeros(np.shape(t_data)[0])
+        else:
+            tr_targets = np.ones(np.shape(tr_data)[0])
+            t_targets = np.ones(np.shape(t_data)[0])
+        train_data.extend(tr_data)
+        train_targets.extend(tr_targets)
+        test_data.extend(t_data)
+        test_targets.extend(t_targets)
+        test_dict.extend(t_dict)
+        all_variables.extend(variables)
+        feature_names.extend(features)
+
+    return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
 
 
 def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):

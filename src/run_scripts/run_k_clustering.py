@@ -1,10 +1,19 @@
 from math import cos, sin, radians
 from ScdmsML.src.utils import sklearn_data_loader, bg70V_sklearn_dataloader, bg70_and_sim_sklearn_dataloader
 from sklearn import metrics
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, spectral_clustering, OPTICS
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from ScdmsML.src.utils.eval import compute_accuracy
+from torch.utils.data import TensorDataset, RandomSampler, DataLoader
+from ScdmsML.src.models import NeuralNetwork
+from ScdmsML.src.main_scripts import train_nn
+from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader
+from sklearn.neural_network import MLPClassifier
+import torch
+import torch.optim as optim
+
 
 import os
 import numpy as np
@@ -42,15 +51,16 @@ rq_var_names = ['PAOFamps', 'PAOFamps0', 'PAOFchisq', 'PAOFchisqLF', 'PAOFdelay'
                 'QOOFdiscreteChisq', 'QOOFdiscreteDelay', 'QOOFdiscreteVolts', 'QOOFflag', 'QOOFvolts', 'QOOFvolts0',
                 'QObias', 'QObiastime', 'QObs', 'QObspost', 'QOgain', 'QOnorm', 'QOsat', 'QOstd', 'QSF5satdelay',
                 'QSOFchisq', 'QSOFchisqBase', 'QSOFdelay', 'QSOFdiscreteChisq', 'QSOFdiscreteDelay']
-# rrq_var_names = ['paOF', 'paOF0', 'paOF0c', 'paOFc', 'paampres', 'padelayres', 'pbOF', 'pbOF0', 'pbOF0c', 'pbOFc',
-#                  'pbampres', 'pbdelayres', 'pcOF', 'pcOF0', 'pcOF0c', 'pcOFc', 'pcampres', 'pcdelayres', 'pdOF',
-#                  'pdOF0', 'pdOF0c', 'pdOFc', 'pdampres', 'pddelayres', 'pminrtOFWK_10100', 'pminrtOFWK_1040',
-#                  'pminrtOFWK_1070', 'pminrtWK_10100', 'pminrtWK_1040', 'pminrtWK_1070', 'pprimechanOF',
-#                  'pprimechanOFWK', 'pprimechanWK', 'pprimechaniOF', 'prdelWK', 'prpartOF', 'prxypartOF', 'psumOF',
-#                  'psumiOF', 'psumoOF', 'ptNF', 'ptNF0', 'ptNF0c', 'ptNF0uc', 'ptNFc', 'ptNFuc', 'ptOF', 'ptOF0',
-#                  'ptOF0c', 'ptOF0uc', 'ptOFc', 'ptOFuc', 'pxdelWK', 'pxpartOF', 'pydelWK', 'pypartOF', 'qiOF', 'qiOF0',
-#                  'qoOF', 'qoOF0', 'qrpartOF', 'qsumOF']
-rrq_var_names = []
+rrq_var_names = ['paOF', 'paOF0', 'paOF0c', 'paOFc', 'paampres', 'padelayres', 'pbOF', 'pbOF0', 'pbOF0c', 'pbOFc',
+                 'pbampres', 'pbdelayres', 'pcOF', 'pcOF0', 'pcOF0c', 'pcOFc', 'pcampres', 'pcdelayres', 'pdOF',
+                 'pdOF0', 'pdOF0c', 'pdOFc', 'pdampres', 'pddelayres', 'pminrtOFWK_10100', 'pminrtOFWK_1040',
+                 'pminrtOFWK_1070', 'pminrtWK_10100', 'pminrtWK_1040', 'pminrtWK_1070', 'pprimechanOF',
+                 'pprimechanOFWK', 'pprimechanWK', 'pprimechaniOF', 'prdelWK', 'prpartOF', 'prxypartOF', 'psumOF',
+                 'psumiOF', 'psumoOF', 'ptNF', 'ptNF0', 'ptNF0c', 'ptNF0uc', 'ptNFc', 'ptNFuc', 'ptOF', 'ptOF0',
+                 'ptOF0c', 'ptOF0uc', 'ptOFc', 'ptOFuc', 'pxdelWK', 'pxpartOF', 'pydelWK', 'pypartOF', 'qiOF', 'qiOF0',
+                 'qoOF', 'qoOF0', 'qrpartOF', 'qsumOF']
+# rrq_var_names = []
+# rq_var_names = []
 # rq_var_names = ['PATFPeflag', 'PBTFPchisq', 'PTPSDint0to1', 'PCWKr10', 'QSOFdiscreteDelay', 'PTPSDint0to1', 'PTNFamps0',
 #                 'PCOFdelay', 'QOOFdiscreteVolts', 'QIOFvolts', 'PTlfnoise1OFdelay', 'PTglitch1OFdelay', 'PTOFdelay',
 #                 'PDOFamps0', 'PTPSDint0to1', 'PTPSDint1to10', 'PDINTall', 'QSOFdelay', 'PTglitch1OFamps0', 'QIOFvolts0',
@@ -141,11 +151,120 @@ new_var_funcs = [lambda args: (cos(radians(30)) * args[0] + cos(radians(150)) * 
 new_var_info = {"names": [], "inputs": [], "funcs": []}
 num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+pin_memory = (device.type == "cuda")
+num_workers = 6
+batch_size = 256
 
-def do_k_clustering(k=2, pca=0):
+def do_optics(k=2, pca=0):
+    t0 = time()
+    print(t0)
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
+        = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+    # train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
+    # sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names,\
+    # train_data, test_data, test_dict, variables, feature_names = bg70_and_sim_sklearn_dataloader(rq_var_names,
+    #                                                                                              rrq_var_names,
+    #                                                                                              new_var_info,
+    #                                                                                              num_scatter_save_path,
+    #                                                                                              with_pca=pca)
+    # all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
+
+    optics = OPTICS(min_samples=5, n_jobs=-1).fit(sim_train_data)
+    t1 = time()
+    print(t1)
+    print((t1 - t0)/3600.)
+    print("targets proportions:0:", len(sim_train_targets) - sum(sim_train_targets), " | 1:", sum(sim_train_targets))
+
+    # visualize_k_clustering(sim_test_data, sim_test_targets, optics, dims=pca, k=k)
+
+    # print("cluster proportions:")
+    # for cluster in np.unique(optics.labels_):
+    #     print(cluster, list(optics.labels_).count(cluster))
+    # print(optics.cluster_hierarchy_)
+    cluster_mapping = {}
+    sim_train_targets = np.array(sim_train_targets)
+
+    for cluster in np.unique(optics.labels_):
+        indices = np.array([index for index, value in enumerate(optics.labels_) if value == cluster])
+        cluster_labels = sim_train_targets[indices]
+        if sum(cluster_labels) > float(len(cluster_labels))/2.:
+            cluster_mapping[cluster] = 1
+        else:
+            cluster_mapping[cluster] = 0
+
+    # train a neural network on the clustered data
+
+    sim_train_targets = []
+    for index, value in enumerate(optics.labels_):
+        sim_train_targets.append(cluster_mapping[value])
+    print(np.mean(sim_train_targets))
+    sim_train_targets = np.array(sim_train_targets)
+
+    model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="adam", activation="relu"
+                          , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
+    acc = model.score(sim_test_data, sim_test_targets)
+    # acc = cross_val_score(model, train_data, train_targets, cv=5)
+    print("Sklearn acc:", acc)
+
+    # sim_train_data = torch.Tensor(sim_train_data)
+    # new_sim_targets = torch.Tensor(new_sim_targets)
+    # new_sim_targets = torch.nn.functional.one_hot(new_sim_targets.to(torch.int64))
+    #
+    # train_dataset = TensorDataset(sim_train_data, new_sim_targets)
+    # train_sampler = RandomSampler(train_dataset)
+    # train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
+    #                           pin_memory=pin_memory)
+    #
+    # sim_test_data = torch.Tensor(sim_test_data)
+    # sim_test_targets = torch.Tensor(sim_test_targets)
+    # sim_test_targets = torch.nn.functional.one_hot(sim_test_targets.to(torch.int64))
+    #
+    # test_dataset = TensorDataset(sim_test_data, sim_test_targets)
+    # test_sampler = RandomSampler(test_dataset)
+    # test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
+    #                          pin_memory=pin_memory)
+
+    # epochs = 1000
+    # learning_rate = 0.01
+    # momentum = 0.9
+    # sizes = [np.shape(sim_train_data)[1], 50, 50, 2]
+    # nn = NeuralNetwork(sizes=sizes).to(device)
+    #
+    # criterion = torch.nn.BCELoss()
+    # optimizer = optim.SGD(nn.parameters(), lr=learning_rate, momentum=momentum, weight_decay=1e-4)
+    #
+    # for _ in range(epochs):
+    #     # for param in nn.parameters():
+    #     #     print(param)
+    #     loss = train_nn(train_loader, nn, criterion, optimizer, False, device)
+    #     err = error_function(nn, test_loader)
+    #     print("Err: ", err)
+    #
+    # # test the model
+    # loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
+    # err = error_function(nn, test_loader)
+    # print("Final Torch Loss: ", loss)
+    # print("Final Torch Err: ", err)
+
+    # preds = optics.predict(sim_test_data)
+    # for idx, pred in enumerate(preds):
+    #     preds[idx] = cluster_mapping[pred]
+
+    # acc = compute_accuracy(preds, sim_test_targets)
+    # print("Accuracy:", acc)
+
+    t2 = time()
+    print(t2)
+    print((t2-t0)/3600.)
+
+
+def do_optics_with_real(k=2, pca=0):
+    t0 = time()
+    print(t0)
     # sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
     #     = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
-    # train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
+    train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
     sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names,\
     train_data, test_data, test_dict, variables, feature_names = bg70_and_sim_sklearn_dataloader(rq_var_names,
                                                                                                  rrq_var_names,
@@ -153,7 +272,103 @@ def do_k_clustering(k=2, pca=0):
                                                                                                  num_scatter_save_path,
                                                                                                  with_pca=pca)
     all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
-    k_means = KMeans(n_init=100, max_iter=100, n_clusters=k, verbose=0).fit(all_data)
+    # create fake targets for real data
+    fake_targets = np.array([2]*np.shape(train_data)[0])
+    assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
+
+    sim_train_targets = np.array(sim_train_targets)
+    all_targets = np.hstack((sim_train_targets, fake_targets))
+    assert np.shape(all_data)[0] == np.shape(all_targets)[0]
+
+    optics = OPTICS(min_samples=5, n_jobs=-1).fit(all_data)
+    t1 = time()
+    print(t1)
+    print((t1 - t0)/3600.)
+    print("targets proportions:0:", len(sim_train_targets) - sum(sim_train_targets), " | 1:", sum(sim_train_targets))
+
+    # visualize_k_clustering(sim_test_data, sim_test_targets, optics, dims=pca, k=k)
+
+    # print("cluster proportions:")
+    # for cluster in np.unique(optics.labels_):
+    #     print(cluster, list(optics.labels_).count(cluster))
+    # print(optics.cluster_hierarchy_)
+    # create fake targets for real data
+    fake_targets = np.array([2]*np.shape(train_data)[0])
+    assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
+
+    sim_train_targets = np.array(sim_train_targets)
+    all_targets = np.hstack((sim_train_targets, fake_targets))
+    assert np.shape(all_data)[0] == np.shape(all_targets)[0]
+
+    cluster_mapping = {}
+
+    for cluster in np.unique(optics.labels_):
+        indices = np.array([index for index, value in enumerate(optics.labels_) if value == cluster])
+        cluster_labels = all_targets[indices]
+        cluster_score = 0
+        cluster_points = 0
+        for label in cluster_labels:
+            if label == 2:
+                continue
+            else:
+                cluster_score += label
+                cluster_points += 1
+        if cluster_points > 2*cluster_score:
+            cluster_mapping[cluster] = 0
+        else:
+            cluster_mapping[cluster] = 1
+
+    # train a neural network on the clustered data
+
+    sim_train_targets = []
+    for index, value in enumerate(optics.labels_):
+        sim_train_targets.append(cluster_mapping[value])
+    print(np.mean(sim_train_targets))
+    np.save("recomputed_all_data_targets.npy", sim_train_targets)
+    sim_train_targets = np.array(sim_train_targets)[:np.shape(sim_train_data)[0]]
+
+    model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
+                          , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
+    acc = model.score(sim_test_data, sim_test_targets)
+    # acc = cross_val_score(model, train_data, train_targets, cv=5)
+    print("Sklearn acc:", acc)
+
+    t2 = time()
+    print(t2)
+    print((t2-t0)/3600.)
+
+
+def error_function(model, batch_loader):
+    """
+    Calculates a metric to judge model. Must return a float.
+    Metric is experiment dependent could be AUROC, Accuracy, Error....
+
+    Metric must be "higher is better" (eg. accuracy)
+
+    Do not modify params. Abstract method for all experiments.
+    """
+
+    confusion_matrix = build_confusion_matrix(model, batch_loader, 2, range(2), device)
+    confusion_matrix = confusion_matrix.to(torch.device("cpu"))
+    print(np.round(confusion_matrix.numpy()))
+
+    class_acc = sum(confusion_matrix.diag()) / sum(confusion_matrix.sum(1))
+
+    return class_acc
+
+
+def do_k_clustering(k=2, pca=0):
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
+        = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+    # train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
+    # sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names,\
+    # train_data, test_data, test_dict, variables, feature_names = bg70_and_sim_sklearn_dataloader(rq_var_names,
+    #                                                                                              rrq_var_names,
+    #                                                                                              new_var_info,
+    #                                                                                              num_scatter_save_path,
+    #                                                                                              with_pca=pca)
+    # all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
+    k_means = KMeans(n_init=100, max_iter=100, n_clusters=k, verbose=0).fit(sim_train_data)
     # print("targets proportions:0:", len(train_targets) - sum(train_targets), " | 1:", sum(train_targets))
     # print("cluster centers:", k_means.cluster_centers_)
     # print("labels: ", k_means.labels_)
@@ -292,5 +507,7 @@ def visualize_2d(reduced_data, targets, kmeans):
 
 
 if __name__ == '__main__':
-    do_k_clustering(k=2, pca=2)
+    # do_optics(k=2, pca=0)
+    do_optics_with_real(k=2, pca=0)
+    # do_k_clustering(k=2, pca=0)
 

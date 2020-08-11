@@ -43,3 +43,15 @@ def build_confusion_matrix(model, dataloader, number_of_classes, cls, device):
     all_binary_targets = all_binary_targets.argmax(1).to(torch.device("cpu"))
 
     return torch.Tensor(confusion_matrix(all_binary_targets, all_binary_outputs))
+
+
+def compute_accuracy(predictions, targets):
+    assert len(predictions) == len(targets)
+
+    accuracy_array = []
+    for (idx, pred), (_, t) in zip(enumerate(predictions), enumerate(targets)):
+        accuracy_array.append(1) if pred == t else accuracy_array.append(0)
+
+    accuracy = float(sum(accuracy_array))/float(len(accuracy_array))
+
+    return accuracy
