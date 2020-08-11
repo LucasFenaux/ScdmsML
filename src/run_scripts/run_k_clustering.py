@@ -324,7 +324,7 @@ def do_optics_with_real(k=2, pca=0):
     for index, value in enumerate(optics.labels_):
         sim_train_targets.append(cluster_mapping[value])
     print(np.mean(sim_train_targets))
-    np.save("recomputed_all_data_targets.npy", sim_train_targets)
+    # np.save("recomputed_all_data_targets.npy", sim_train_targets)
     sim_train_targets = np.array(sim_train_targets)[:np.shape(sim_train_data)[0]]
 
     model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
