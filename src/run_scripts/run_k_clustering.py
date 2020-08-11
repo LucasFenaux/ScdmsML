@@ -272,70 +272,84 @@ def do_optics_with_real(k=2, pca=0):
                                                                                                  num_scatter_save_path,
                                                                                                  with_pca=pca)
     all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
-    # create fake targets for real data
-    fake_targets = np.array([2]*np.shape(train_data)[0])
-    assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
+    try:
+        all_targets = np.read("recomputed_all_data_targets.npy")
+        all_targets[:np.shape(sim_train_data)[0]] = sim_train_targets
+        model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
+                              , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, all_targets)
+        acc = model.score(sim_test_data, sim_test_targets)
+        # acc = cross_val_score(model, train_data, train_targets, cv=5)
+        print("Sklearn acc:", acc)
 
-    sim_train_targets = np.array(sim_train_targets)
-    all_targets = np.hstack((sim_train_targets, fake_targets))
-    assert np.shape(all_data)[0] == np.shape(all_targets)[0]
+        t2 = time()
+        print(t2)
+        print((t2 - t0) / 3600.)
 
-    optics = OPTICS(min_samples=5, n_jobs=-1).fit(all_data)
-    t1 = time()
-    print(t1)
-    print((t1 - t0)/3600.)
-    print("targets proportions:0:", len(sim_train_targets) - sum(sim_train_targets), " | 1:", sum(sim_train_targets))
+    except:
+        # create fake targets for real data
+        fake_targets = np.array([2]*np.shape(train_data)[0])
+        assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
 
-    # visualize_k_clustering(sim_test_data, sim_test_targets, optics, dims=pca, k=k)
+        sim_train_targets = np.array(sim_train_targets)
+        all_targets = np.hstack((sim_train_targets, fake_targets))
+        assert np.shape(all_data)[0] == np.shape(all_targets)[0]
 
-    # print("cluster proportions:")
-    # for cluster in np.unique(optics.labels_):
-    #     print(cluster, list(optics.labels_).count(cluster))
-    # print(optics.cluster_hierarchy_)
-    # create fake targets for real data
-    fake_targets = np.array([2]*np.shape(train_data)[0])
-    assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
+        optics = OPTICS(min_samples=5, n_jobs=-1).fit(all_data)
+        t1 = time()
+        print(t1)
+        print((t1 - t0)/3600.)
+        print("targets proportions:0:", len(sim_train_targets) - sum(sim_train_targets), " | 1:", sum(sim_train_targets))
 
-    sim_train_targets = np.array(sim_train_targets)
-    all_targets = np.hstack((sim_train_targets, fake_targets))
-    assert np.shape(all_data)[0] == np.shape(all_targets)[0]
+        # visualize_k_clustering(sim_test_data, sim_test_targets, optics, dims=pca, k=k)
 
-    cluster_mapping = {}
+        # print("cluster proportions:")
+        # for cluster in np.unique(optics.labels_):
+        #     print(cluster, list(optics.labels_).count(cluster))
+        # print(optics.cluster_hierarchy_)
+        # create fake targets for real data
+        fake_targets = np.array([2]*np.shape(train_data)[0])
+        assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
 
-    for cluster in np.unique(optics.labels_):
-        indices = np.array([index for index, value in enumerate(optics.labels_) if value == cluster])
-        cluster_labels = all_targets[indices]
-        cluster_score = 0
-        cluster_points = 0
-        for label in cluster_labels:
-            if label == 2:
-                continue
+        sim_train_targets = np.array(sim_train_targets)
+        all_targets = np.hstack((sim_train_targets, fake_targets))
+        assert np.shape(all_data)[0] == np.shape(all_targets)[0]
+
+        cluster_mapping = {}
+
+        for cluster in np.unique(optics.labels_):
+            indices = np.array([index for index, value in enumerate(optics.labels_) if value == cluster])
+            cluster_labels = all_targets[indices]
+            cluster_score = 0
+            cluster_points = 0
+            for label in cluster_labels:
+                if label == 2:
+                    continue
+                else:
+                    cluster_score += label
+                    cluster_points += 1
+            if cluster_points > 2*cluster_score:
+                cluster_mapping[cluster] = 0
             else:
-                cluster_score += label
-                cluster_points += 1
-        if cluster_points > 2*cluster_score:
-            cluster_mapping[cluster] = 0
-        else:
-            cluster_mapping[cluster] = 1
+                cluster_mapping[cluster] = 1
 
-    # train a neural network on the clustered data
+        # train a neural network on the clustered data
 
-    sim_train_targets = []
-    for index, value in enumerate(optics.labels_):
-        sim_train_targets.append(cluster_mapping[value])
-    print(np.mean(sim_train_targets))
-    # np.save("recomputed_all_data_targets.npy", sim_train_targets)
-    sim_train_targets = np.array(sim_train_targets)[:np.shape(sim_train_data)[0]]
+        sim_train_targets = []
+        for index, value in enumerate(optics.labels_):
+            sim_train_targets.append(cluster_mapping[value])
+        print(np.mean(sim_train_targets))
+        # np.save("recomputed_all_data_targets.npy", sim_train_targets)
+        sim_train_targets = np.array(sim_train_targets)[:np.shape(sim_train_data)[0]]
 
-    model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
-                          , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
-    acc = model.score(sim_test_data, sim_test_targets)
-    # acc = cross_val_score(model, train_data, train_targets, cv=5)
-    print("Sklearn acc:", acc)
+        model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
+                              , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
+        acc = model.score(sim_test_data, sim_test_targets)
+        # acc = cross_val_score(model, train_data, train_targets, cv=5)
+        print("Sklearn acc:", acc)
 
-    t2 = time()
-    print(t2)
-    print((t2-t0)/3600.)
+        t2 = time()
+        print(t2)
+        print((t2-t0)/3600.)
 
 
 def error_function(model, batch_loader):
