@@ -22,6 +22,44 @@ from time import time
 # Global Variable
 det = 14
 # All available RQs and RRQs
+# rq_var_names = ['PAOFamps', 'PAOFamps0', 'PAOFchisq', 'PAOFchisqLF', 'PAOFdelay', 'PATFPamp', 'PATFPchisq',
+#                  'PATFPeflag', 'PATFPint', 'PATFPoffset', 'PATFPtau', 'PAWKf20', 'PAWKf40', 'PAWKf80', 'PAWKf90',
+#                  'PAWKf95', 'PAWKmax', 'PAWKr10', 'PAWKr100', 'PAWKr20', 'PAWKr30', 'PAWKr40', 'PAWKr50', 'PAWKr60',
+#                  'PAWKr70', 'PAWKr80', 'PAWKr90', 'PAWKr95', 'PAbias', 'PAbs', 'PAbspost', 'PAgain', 'PAnorm', 'PAsat',
+#                  'PAstd', 'PBINTall', 'PBOFamps', 'PBOFamps0', 'PBOFchisq', 'PBOFchisqLF', 'PBOFdelay', 'PBTFPamp',
+#                  'PBTFPchisq', 'PBTFPeflag', 'PBTFPint', 'PBTFPoffset', 'PBTFPtau', 'PBWKf20', 'PBWKf40', 'PBWKf80',
+#                  'PBWKf90', 'PBWKf95', 'PBWKmax', 'PBWKr10', 'PBWKr100', 'PBWKr20', 'PBWKr30', 'PBWKr40', 'PBWKr50',
+#                  'PBWKr60', 'PBWKr70', 'PBWKr80', 'PBWKr90', 'PBWKr95', 'PBbias', 'PBbs', 'PBbspost', 'PBgain',
+#                 'PBnorm', 'PBsat', 'PBstd', 'PCINTall', 'PCOFamps', 'PCOFamps0', 'PCOFchisq', 'PCOFchisqLF',
+#                 'PCOFdelay', 'PCTFPamp', 'PCTFPchisq', 'PCTFPeflag', 'PCTFPint', 'PCTFPoffset', 'PCTFPtau', 'PCWKf20',
+#                 'PCWKf40', 'PCWKf80', 'PCWKf90', 'PCWKf95', 'PCWKmax', 'PCWKr10', 'PCWKr100', 'PCWKr20', 'PCWKr30',
+#                 'PCWKr40', 'PCWKr50', 'PCWKr60', 'PCWKr70', 'PCWKr80', 'PCWKr90', 'PCWKr95', 'PCbias', 'PCbs',
+#                 'PCbspost', 'PCgain', 'PCnorm', 'PCsat', 'PCstd', 'PDINTall', 'PDOFamps', 'PDOFamps0', 'PDOFchisq',
+#                 'PDOFchisqLF', 'PDOFdelay', 'PDTFPamp', 'PDTFPchisq', 'PDTFPeflag', 'PDTFPint', 'PDTFPoffset',
+#                 'PDTFPtau', 'PDWKf20', 'PDWKf40', 'PDWKf80', 'PDWKf90', 'PDWKf95', 'PDWKmax', 'PDWKr10', 'PDWKr100',
+#                 'PDWKr20', 'PDWKr30', 'PDWKr40', 'PDWKr50', 'PDWKr60', 'PDWKr70', 'PDWKr80', 'PDWKr90', 'PDWKr95',
+#                 'PDbias', 'PDbs', 'PDbspost', 'PDgain', 'PDnorm', 'PDsat', 'PDstd', 'PS1INTall', 'PS1OFamps',
+#                 'PS1OFamps0', 'PS1OFchisq', 'PS1OFchisqLF', 'PS1OFdelay', 'PS2INTall', 'PS2OFamps', 'PS2OFamps0',
+#                 'PS2OFchisq', 'PS2OFchisqLF', 'PS2OFdelay', 'PTNFamps', 'PTNFamps0', 'PTNFchisq', 'PTNFdelay',
+#                 'PTOFamps', 'PTOFamps0', 'PTOFchisq', 'PTOFchisqLF', 'PTOFdelay', 'PTPSDint0to1', 'PTPSDint1to10',
+#                 'PTPSDintall', 'PTglitch1OFamps', 'PTglitch1OFamps0', 'PTglitch1OFchisq', 'PTglitch1OFchisqLF',
+#                 'PTglitch1OFdelay', 'PTlfnoise1OFamps', 'PTlfnoise1OFamps0', 'PTlfnoise1OFchisq',
+#                 'PTlfnoise1OFchisqLF', 'PTlfnoise1OFdelay', 'QIF5base', 'QIF5chisq', 'QIF5volts', 'QIOFchisq',
+#                 'QIOFchisqBase', 'QIOFdelay', 'QIOFdiscreteChisq', 'QIOFdiscreteDelay', 'QIOFdiscreteVolts', 'QIOFflag',
+#                 'QIOFvolts', 'QIOFvolts0', 'QIbias', 'QIbiastime', 'QIbs', 'QIbspost', 'QIgain', 'QInorm', 'QIsat',
+#                 'QIstd', 'QOF5base', 'QOF5chisq', 'QOF5volts', 'QOOFchisq', 'QOOFchisqBase', 'QOOFdelay',
+#                 'QOOFdiscreteChisq', 'QOOFdiscreteDelay', 'QOOFdiscreteVolts', 'QOOFflag', 'QOOFvolts', 'QOOFvolts0',
+#                 'QObias', 'QObiastime', 'QObs', 'QObspost', 'QOgain', 'QOnorm', 'QOsat', 'QOstd', 'QSF5satdelay',
+#                 'QSOFchisq', 'QSOFchisqBase', 'QSOFdelay', 'QSOFdiscreteChisq', 'QSOFdiscreteDelay']
+rrq_var_names = ['paOF', 'paOF0', 'paOF0c', 'paOFc', 'paampres', 'padelayres', 'pbOF', 'pbOF0', 'pbOF0c', 'pbOFc',
+                 'pbampres', 'pbdelayres', 'pcOF', 'pcOF0', 'pcOF0c', 'pcOFc', 'pcampres', 'pcdelayres', 'pdOF',
+                 'pdOF0', 'pdOF0c', 'pdOFc', 'pdampres', 'pddelayres', 'pminrtOFWK_10100', 'pminrtOFWK_1040',
+                 'pminrtOFWK_1070', 'pminrtWK_10100', 'pminrtWK_1040', 'pminrtWK_1070', 'pprimechanOF',
+                 'pprimechanOFWK', 'pprimechanWK', 'pprimechaniOF', 'prdelWK', 'prpartOF', 'prxypartOF', 'psumOF',
+                 'psumiOF', 'psumoOF', 'ptNF', 'ptNF0', 'ptNF0c', 'ptNF0uc', 'ptNFc', 'ptNFuc', 'ptOF', 'ptOF0',
+                 'ptOF0c', 'ptOF0uc', 'ptOFc', 'ptOFuc', 'pxdelWK', 'pxpartOF', 'pydelWK', 'pypartOF', 'qiOF', 'qiOF0',
+                 'qoOF', 'qoOF0', 'qrpartOF', 'qsumOF']
+
 rq_var_names = ['PAOFamps', 'PAOFamps0', 'PAOFchisq', 'PAOFchisqLF', 'PAOFdelay', 'PATFPamp', 'PATFPchisq',
                  'PATFPeflag', 'PATFPint', 'PATFPoffset', 'PATFPtau', 'PAWKf20', 'PAWKf40', 'PAWKf80', 'PAWKf90',
                  'PAWKf95', 'PAWKmax', 'PAWKr10', 'PAWKr100', 'PAWKr20', 'PAWKr30', 'PAWKr40', 'PAWKr50', 'PAWKr60',
@@ -38,9 +76,8 @@ rq_var_names = ['PAOFamps', 'PAOFamps0', 'PAOFchisq', 'PAOFchisqLF', 'PAOFdelay'
                 'PDOFchisqLF', 'PDOFdelay', 'PDTFPamp', 'PDTFPchisq', 'PDTFPeflag', 'PDTFPint', 'PDTFPoffset',
                 'PDTFPtau', 'PDWKf20', 'PDWKf40', 'PDWKf80', 'PDWKf90', 'PDWKf95', 'PDWKmax', 'PDWKr10', 'PDWKr100',
                 'PDWKr20', 'PDWKr30', 'PDWKr40', 'PDWKr50', 'PDWKr60', 'PDWKr70', 'PDWKr80', 'PDWKr90', 'PDWKr95',
-                'PDbias', 'PDbs', 'PDbspost', 'PDgain', 'PDnorm', 'PDsat', 'PDstd', 'PS1INTall', 'PS1OFamps',
-                'PS1OFamps0', 'PS1OFchisq', 'PS1OFchisqLF', 'PS1OFdelay', 'PS2INTall', 'PS2OFamps', 'PS2OFamps0',
-                'PS2OFchisq', 'PS2OFchisqLF', 'PS2OFdelay', 'PTNFamps', 'PTNFamps0', 'PTNFchisq', 'PTNFdelay',
+                'PDbias', 'PDbs', 'PDbspost', 'PDgain', 'PDnorm', 'PDsat', 'PDstd'
+                , 'PTNFamps', 'PTNFamps0', 'PTNFchisq', 'PTNFdelay',
                 'PTOFamps', 'PTOFamps0', 'PTOFchisq', 'PTOFchisqLF', 'PTOFdelay', 'PTPSDint0to1', 'PTPSDint1to10',
                 'PTPSDintall', 'PTglitch1OFamps', 'PTglitch1OFamps0', 'PTglitch1OFchisq', 'PTglitch1OFchisqLF',
                 'PTglitch1OFdelay', 'PTlfnoise1OFamps', 'PTlfnoise1OFamps0', 'PTlfnoise1OFchisq',
@@ -51,14 +88,6 @@ rq_var_names = ['PAOFamps', 'PAOFamps0', 'PAOFchisq', 'PAOFchisqLF', 'PAOFdelay'
                 'QOOFdiscreteChisq', 'QOOFdiscreteDelay', 'QOOFdiscreteVolts', 'QOOFflag', 'QOOFvolts', 'QOOFvolts0',
                 'QObias', 'QObiastime', 'QObs', 'QObspost', 'QOgain', 'QOnorm', 'QOsat', 'QOstd', 'QSF5satdelay',
                 'QSOFchisq', 'QSOFchisqBase', 'QSOFdelay', 'QSOFdiscreteChisq', 'QSOFdiscreteDelay']
-rrq_var_names = ['paOF', 'paOF0', 'paOF0c', 'paOFc', 'paampres', 'padelayres', 'pbOF', 'pbOF0', 'pbOF0c', 'pbOFc',
-                 'pbampres', 'pbdelayres', 'pcOF', 'pcOF0', 'pcOF0c', 'pcOFc', 'pcampres', 'pcdelayres', 'pdOF',
-                 'pdOF0', 'pdOF0c', 'pdOFc', 'pdampres', 'pddelayres', 'pminrtOFWK_10100', 'pminrtOFWK_1040',
-                 'pminrtOFWK_1070', 'pminrtWK_10100', 'pminrtWK_1040', 'pminrtWK_1070', 'pprimechanOF',
-                 'pprimechanOFWK', 'pprimechanWK', 'pprimechaniOF', 'prdelWK', 'prpartOF', 'prxypartOF', 'psumOF',
-                 'psumiOF', 'psumoOF', 'ptNF', 'ptNF0', 'ptNF0c', 'ptNF0uc', 'ptNFc', 'ptNFuc', 'ptOF', 'ptOF0',
-                 'ptOF0c', 'ptOF0uc', 'ptOFc', 'ptOFuc', 'pxdelWK', 'pxpartOF', 'pydelWK', 'pypartOF', 'qiOF', 'qiOF0',
-                 'qoOF', 'qoOF0', 'qrpartOF', 'qsumOF']
 # rrq_var_names = []
 # rq_var_names = []
 # rq_var_names = ['PATFPeflag', 'PBTFPchisq', 'PTPSDint0to1', 'PCWKr10', 'QSOFdiscreteDelay', 'PTPSDint0to1', 'PTNFamps0',
@@ -264,7 +293,6 @@ def do_optics_with_real(k=2, pca=0):
     print(t0)
     # sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
     #     = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
-    train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
     sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names,\
     train_data, test_data, test_dict, variables, feature_names = bg70_and_sim_sklearn_dataloader(rq_var_names,
                                                                                                  rrq_var_names,
@@ -272,84 +300,84 @@ def do_optics_with_real(k=2, pca=0):
                                                                                                  num_scatter_save_path,
                                                                                                  with_pca=pca)
     all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
-    try:
-        all_targets = np.read("recomputed_all_data_targets.npy")
-        all_targets[:np.shape(sim_train_data)[0]] = sim_train_targets
-        model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
-                              , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, all_targets)
-        acc = model.score(sim_test_data, sim_test_targets)
-        # acc = cross_val_score(model, train_data, train_targets, cv=5)
-        print("Sklearn acc:", acc)
+    # try:
+    #     all_targets = np.load("recomputed_all_data_targets.npy")
+    #     all_targets[:np.shape(sim_train_data)[0]] = sim_train_targets
+    #     model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
+    #                           , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, all_targets)
+    #     acc = model.score(sim_test_data, sim_test_targets)
+    #     # acc = cross_val_score(model, train_data, train_targets, cv=5)
+    #     print("Sklearn acc:", acc)
+    #
+    #     t2 = time()
+    #     print(t2)
+    #     print((t2 - t0) / 3600.)
+    #
+    # except IOError:
+    # create fake targets for real data
+    fake_targets = np.array([2]*np.shape(train_data)[0])
+    assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
 
-        t2 = time()
-        print(t2)
-        print((t2 - t0) / 3600.)
+    sim_train_targets = np.array(sim_train_targets)
+    all_targets = np.hstack((sim_train_targets, fake_targets))
+    assert np.shape(all_data)[0] == np.shape(all_targets)[0]
 
-    except:
-        # create fake targets for real data
-        fake_targets = np.array([2]*np.shape(train_data)[0])
-        assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
+    optics = OPTICS(min_samples=5, n_jobs=-1).fit(all_data)
+    t1 = time()
+    print(t1)
+    print((t1 - t0)/3600.)
+    print("targets proportions:0:", len(sim_train_targets) - sum(sim_train_targets), " | 1:", sum(sim_train_targets))
 
-        sim_train_targets = np.array(sim_train_targets)
-        all_targets = np.hstack((sim_train_targets, fake_targets))
-        assert np.shape(all_data)[0] == np.shape(all_targets)[0]
+    # visualize_k_clustering(sim_test_data, sim_test_targets, optics, dims=pca, k=k)
 
-        optics = OPTICS(min_samples=5, n_jobs=-1).fit(all_data)
-        t1 = time()
-        print(t1)
-        print((t1 - t0)/3600.)
-        print("targets proportions:0:", len(sim_train_targets) - sum(sim_train_targets), " | 1:", sum(sim_train_targets))
+    # print("cluster proportions:")
+    # for cluster in np.unique(optics.labels_):
+    #     print(cluster, list(optics.labels_).count(cluster))
+    # print(optics.cluster_hierarchy_)
+    # create fake targets for real data
+    fake_targets = np.array([2]*np.shape(train_data)[0])
+    assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
 
-        # visualize_k_clustering(sim_test_data, sim_test_targets, optics, dims=pca, k=k)
+    sim_train_targets = np.array(sim_train_targets)
+    all_targets = np.hstack((sim_train_targets, fake_targets))
+    assert np.shape(all_data)[0] == np.shape(all_targets)[0]
 
-        # print("cluster proportions:")
-        # for cluster in np.unique(optics.labels_):
-        #     print(cluster, list(optics.labels_).count(cluster))
-        # print(optics.cluster_hierarchy_)
-        # create fake targets for real data
-        fake_targets = np.array([2]*np.shape(train_data)[0])
-        assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
+    cluster_mapping = {}
 
-        sim_train_targets = np.array(sim_train_targets)
-        all_targets = np.hstack((sim_train_targets, fake_targets))
-        assert np.shape(all_data)[0] == np.shape(all_targets)[0]
-
-        cluster_mapping = {}
-
-        for cluster in np.unique(optics.labels_):
-            indices = np.array([index for index, value in enumerate(optics.labels_) if value == cluster])
-            cluster_labels = all_targets[indices]
-            cluster_score = 0
-            cluster_points = 0
-            for label in cluster_labels:
-                if label == 2:
-                    continue
-                else:
-                    cluster_score += label
-                    cluster_points += 1
-            if cluster_points > 2*cluster_score:
-                cluster_mapping[cluster] = 0
+    for cluster in np.unique(optics.labels_):
+        indices = np.array([index for index, value in enumerate(optics.labels_) if value == cluster])
+        cluster_labels = all_targets[indices]
+        cluster_score = 0
+        cluster_points = 0
+        for label in cluster_labels:
+            if label == 2:
+                continue
             else:
-                cluster_mapping[cluster] = 1
+                cluster_score += label
+                cluster_points += 1
+        if cluster_points > 2*cluster_score:
+            cluster_mapping[cluster] = 0
+        else:
+            cluster_mapping[cluster] = 1
 
-        # train a neural network on the clustered data
+    # train a neural network on the clustered data
 
-        sim_train_targets = []
-        for index, value in enumerate(optics.labels_):
-            sim_train_targets.append(cluster_mapping[value])
-        print(np.mean(sim_train_targets))
-        # np.save("recomputed_all_data_targets.npy", sim_train_targets)
-        sim_train_targets = np.array(sim_train_targets)[:np.shape(sim_train_data)[0]]
+    sim_train_targets = []
+    for index, value in enumerate(optics.labels_):
+        sim_train_targets.append(cluster_mapping[value])
+    print(np.mean(sim_train_targets))
+    # np.save("recomputed_all_data_targets.npy", sim_train_targets)
+    sim_train_targets = np.array(sim_train_targets)[:np.shape(sim_train_data)[0]]
 
-        model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
-                              , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
-        acc = model.score(sim_test_data, sim_test_targets)
-        # acc = cross_val_score(model, train_data, train_targets, cv=5)
-        print("Sklearn acc:", acc)
+    model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
+                          , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
+    acc = model.score(sim_test_data, sim_test_targets)
+    # acc = cross_val_score(model, train_data, train_targets, cv=5)
+    print("Sklearn acc:", acc)
 
-        t2 = time()
-        print(t2)
-        print((t2-t0)/3600.)
+    t2 = time()
+    print(t2)
+    print((t2-t0)/3600.)
 
 
 def error_function(model, batch_loader):
@@ -372,17 +400,17 @@ def error_function(model, batch_loader):
 
 
 def do_k_clustering(k=2, pca=0):
-    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
-        = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
-    # train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
-    # sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names,\
-    # train_data, test_data, test_dict, variables, feature_names = bg70_and_sim_sklearn_dataloader(rq_var_names,
-    #                                                                                              rrq_var_names,
-    #                                                                                              new_var_info,
-    #                                                                                              num_scatter_save_path,
-    #                                                                                              with_pca=pca)
-    # all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
-    k_means = KMeans(n_init=100, max_iter=100, n_clusters=k, verbose=0).fit(sim_train_data)
+    # sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names\
+    #     = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+    train_data, test_data, test_dict, variables, feature_names = bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=pca)
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names,\
+    train_data, test_data, test_dict, variables, feature_names = bg70_and_sim_sklearn_dataloader(rq_var_names,
+                                                                                                 rrq_var_names,
+                                                                                                 new_var_info,
+                                                                                                 num_scatter_save_path,
+                                                                                                 with_pca=pca)
+    all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
+    k_means = KMeans(n_init=100, max_iter=1000, n_clusters=k, verbose=1, n_jobs=-1).fit(all_data)
     # print("targets proportions:0:", len(train_targets) - sum(train_targets), " | 1:", sum(train_targets))
     # print("cluster centers:", k_means.cluster_centers_)
     # print("labels: ", k_means.labels_)
@@ -522,6 +550,6 @@ def visualize_2d(reduced_data, targets, kmeans):
 
 if __name__ == '__main__':
     # do_optics(k=2, pca=0)
-    do_optics_with_real(k=2, pca=0)
-    # do_k_clustering(k=2, pca=0)
-
+    # do_optics_with_real(k=2, pca=0)
+    do_k_clustering(k=2, pca=2)
+#

@@ -104,7 +104,7 @@ def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
                         os.path.relpath("../../data/bg70V/merge_Prodv5-6-3_1506_bg70V_z14lite.root")]
     file_dets = [14, 14, 14]
 
-    train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names)
+    train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names, calib_file_paths, merge_file_paths, file_dets)
 
     if with_pca > 0:
         pca = PCA(n_components=with_pca)
@@ -216,11 +216,26 @@ def w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sa
 
 
 def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
+    calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
+    merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
+    init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+    dets = [14]
     sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = data_loader(rq_var_names,
                                                                                                           rrq_var_names,
                                                                                                           new_var_info,
-                                                                                                          num_scatter_save_path)
-    train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names)
+                                                                                                          num_scatter_save_path,
+                                                                                                          calib_paths,
+                                                                                                          merge_paths,
+                                                                                                          init_paths, dets)
+    calib_file_paths = [os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1505_bg70V_z14lite.root"),
+                        os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1505r_bg70V_z14lite.root"),
+                        os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1506_bg70V_z14lite.root")]
+    merge_file_paths = [os.path.relpath("../../data/bg70V/merge_Prodv5-6-3_1505_bg70V_z14lite.root"),
+                        os.path.relpath("../../data/bg70V/merge_Prodv5-6-3_1505r_bg70V_z14lite.root"),
+                        os.path.relpath("../../data/bg70V/merge_Prodv5-6-3_1506_bg70V_z14lite.root")]
+    file_dets = [14, 14, 14]
+    train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names, calib_file_paths,
+                                                                                  merge_file_paths, file_dets)
     all_data = np.ma.concatenate([np.array(sim_train_data), np.array(train_data)], axis=0)
     if with_pca > 0:
         pca = PCA(n_components=with_pca)
@@ -240,16 +255,15 @@ def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, n
 
     return sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names, train_data, test_data, test_dict, variables, feature_names
 
-def real_data_loader(rq_var_names, rrq_var_names):
+def real_data_loader(rq_var_names, rrq_var_names, calib_paths, merge_paths, dets):
     train_data = []
     test_data = []
     test_dict = []
     all_variables = []
     feature_names = []
-    for file_idx in range(min(len(calib_paths), len(merge_paths), len(init_paths), len(dets))):
-        calib_path = calib_paths[file_idx][1]
-        merge_path = merge_paths[file_idx][1]
-        init_path = init_paths[file_idx][1]
+    for file_idx in range(min(len(calib_paths), len(merge_paths), len(dets))):
+        calib_path = calib_paths[file_idx]
+        merge_path = merge_paths[file_idx]
         det = dets[file_idx]
         calib = uproot.open(calib_path)["rrqDir"]["calibzip{}".format(det)]
 
@@ -272,7 +286,7 @@ def real_data_loader(rq_var_names, rrq_var_names):
     return train_data, test_data, test_dict, all_variables, feature_names
 
 
-def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path):
+def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths, init_paths, dets):
     train_data = []
     train_targets = []
     test_data = []
