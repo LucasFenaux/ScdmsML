@@ -38,6 +38,7 @@ def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_s
     calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
     merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
     init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+    dets = [14]
 
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
                                                                                                           rrq_var_names,
@@ -45,19 +46,12 @@ def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_s
                                                                                                           num_scatter_save_path,
                                                                                                           calib_paths,
                                                                                                           merge_paths,
-                                                                                                          init_paths)
+                                                                                                          init_paths,
+                                                                                                          dets)
+    # perform PCA dimensionality reduction to the data
     if with_pca > 0:
-        pca = PCA(n_components=with_pca)
-        train_data = pca.fit_transform(train_data)
-        components = np.array(pca.components_)
-        np.set_printoptions(suppress=True, precision=5)
-        most_important_components = []
-        for i in range(np.shape(components)[0]):
-            most_important_comp = np.argmax(np.abs(components[i]))
-            most_important_components.append(feature_names[most_important_comp])
-            print(most_important_comp, feature_names[most_important_comp])
-        print(most_important_components)
-        test_data = pca.transform(test_data)
+        train_data, test_data = perform_pca_reduction(with_pca, train_data, test_data, feature_names)
+
     return train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names
 
 
@@ -67,6 +61,7 @@ def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sav
     calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
     merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
     init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+    dets = [14]
 
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
                                                                                                           rrq_var_names,
@@ -74,19 +69,11 @@ def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sav
                                                                                                           num_scatter_save_path,
                                                                                                           calib_paths,
                                                                                                           merge_paths,
-                                                                                                          init_paths)
-    if with_pca != 0:
-        pca = PCA(n_components=with_pca)
-        train_data = pca.fit_transform(train_data)
-        components = np.array(pca.components_)
-        np.set_printoptions(suppress=True, precision=5)
-        most_important_components = []
-        for i in range(np.shape(components)[0]):
-            most_important_comp = np.argmax(np.abs(components[i]))
-            most_important_components.append(feature_names[most_important_comp])
-            print(most_important_comp, feature_names[most_important_comp])
-        print(most_important_components)
-        test_data = pca.transform(test_data)
+                                                                                                          init_paths,
+                                                                                                          dets)
+    # perform PCA dimensionality reduction to the data
+    if with_pca > 0:
+        train_data, test_data = perform_pca_reduction(with_pca, train_data, test_data, feature_names)
 
     train_data = torch.Tensor(train_data)
     train_targets = torch.Tensor(train_targets)
@@ -119,20 +106,13 @@ def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
                         os.path.relpath("../../data/bg70V/merge_Prodv5-6-3_1506_bg70V_z14lite.root")]
     file_dets = [14, 14, 14]
 
-    train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names, calib_file_paths, merge_file_paths, file_dets)
+    train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names,
+                                                                                  calib_file_paths, merge_file_paths,
+                                                                                  file_dets)
 
+    # perform PCA dimensionality reduction to the data
     if with_pca > 0:
-        pca = PCA(n_components=with_pca)
-        train_data = pca.fit_transform(train_data)
-        components = np.array(pca.components_)
-        np.set_printoptions(suppress=True, precision=5)
-        most_important_components = []
-        for i in range(np.shape(components)[0]):
-            most_important_comp = np.argmax(np.abs(components[i]))
-            most_important_components.append(feature_names[most_important_comp])
-            print(most_important_comp, feature_names[most_important_comp])
-        print(most_important_components)
-        test_data = pca.transform(test_data)
+        train_data, test_data = perform_pca_reduction(with_pca, train_data, test_data, feature_names)
 
     return train_data, test_data, test_dict, variables, feature_names
 
@@ -146,26 +126,14 @@ def wimp_vs_photo_data_loader(rq_var_names, rrq_var_names, new_var_info, num_sca
     init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat"), "photo"],
                    [True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat"), "wimp"]]
     dets = [14, 4]
-    sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = w_vs_p_data_loader(rq_var_names,
-                                                                                                                                     rrq_var_names,
-                                                                                                                                     new_var_info,
-                                                                                                                                     num_scatter_save_path,
-                                                                                                                                     calib_paths,
-                                                                                                                                     merge_paths,
-                                                                                                                                     init_paths,
-                                                                                                                                     dets)
+    sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = \
+        w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths,
+                           init_paths, dets)
+
+    # perform PCA dimensionality reduction to the data
     if with_pca > 0:
-        pca = PCA(n_components=with_pca)
-        sim_train_data = pca.fit_transform(sim_train_data)
-        components = np.array(pca.components_)
-        np.set_printoptions(suppress=True, precision=5)
-        most_important_components = []
-        for i in range(np.shape(components)[0]):
-            most_important_comp = np.argmax(np.abs(components[i]))
-            most_important_components.append(sim_feature_names[most_important_comp])
-            print(most_important_comp, sim_feature_names[most_important_comp])
-        print(most_important_components)
-        sim_test_data = pca.transform(sim_test_data)
+        sim_train_data, sim_test_data = perform_pca_reduction(with_pca, sim_train_data, sim_test_data, sim_feature_names)
+
     return sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names
 
 
@@ -214,7 +182,7 @@ def w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sa
                                                                                        rrq_var_names +
                                                                                        new_var_info["names"],
                                                                                        "Single?", 0.8, energies)
-
+        # Create the targets, 0 for wimp, 1 for the rest
         if data_type == "wimp":
             tr_targets = np.zeros(np.shape(tr_data)[0])
             t_targets = np.zeros(np.shape(t_data)[0])
@@ -256,12 +224,15 @@ def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, n
     train_data, test_data, test_dict, variables, feature_names = real_data_loader(rq_var_names, rrq_var_names, calib_file_paths,
                                                                                   merge_file_paths, file_dets)
     all_data = np.ma.concatenate([np.array(sim_train_data), np.array(train_data)], axis=0)
+
+    # perform PCA dimensionality reduction to both the real and simulated data
     if with_pca > 0:
         pca = PCA(n_components=with_pca)
         pca = pca.fit(all_data)
         components = np.array(pca.components_)
         np.set_printoptions(suppress=True, precision=5)
         most_important_components = []
+        print("Getting the most important PCA components")
         for i in range(np.shape(components)[0]):
             most_important_comp = np.argmax(np.abs(components[i]))
             most_important_components.append(feature_names[most_important_comp])
@@ -363,6 +334,23 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
 
 
 # HELPER FUNCTIONS
+
+def perform_pca_reduction(n_components, train_data, test_data, feature_names):
+    pca = PCA(n_components=n_components)
+    train_data = pca.fit_transform(train_data)
+    components = np.array(pca.components_)
+    np.set_printoptions(suppress=True, precision=5)
+    most_important_components = []
+    print("Getting most important PCA components")
+    for i in range(np.shape(components)[0]):
+        most_important_comp = np.argmax(np.abs(components[i]))
+        most_important_components.append(feature_names[most_important_comp])
+        print(most_important_comp, feature_names[most_important_comp])
+    print(most_important_components)
+    test_data = pca.transform(test_data)
+
+    return train_data, test_data
+
 def get_num_scatters(init_path, save_path, det=None, write=True):
     init = loadmat(init_path)
     # Get event number for each scatter
