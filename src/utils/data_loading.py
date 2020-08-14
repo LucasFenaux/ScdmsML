@@ -7,10 +7,8 @@ import torch
 from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
 
-
+# files used for the experiments
 # calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
-# [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/all_calib.root")]]
-    # [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
                # [True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038.root")]]
               # [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root")],
                # [False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root")]]
@@ -36,10 +34,18 @@ from sklearn.decomposition import PCA
 
 
 def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
+    """Basic data loader for any simulated data that returns numpy arrays for the data"""
+    calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
+    merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
+    init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
                                                                                                           rrq_var_names,
                                                                                                           new_var_info,
-                                                                                                          num_scatter_save_path)
+                                                                                                          num_scatter_save_path,
+                                                                                                          calib_paths,
+                                                                                                          merge_paths,
+                                                                                                          init_paths)
     if with_pca > 0:
         pca = PCA(n_components=with_pca)
         train_data = pca.fit_transform(train_data)
@@ -57,10 +63,18 @@ def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_s
 
 def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, batch_size=256,
                       num_workers=1, pin_memory=False, with_pca=0):
+    """Basic pytorch data loader for any simulated data"""
+    calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
+    merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
+    init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
                                                                                                           rrq_var_names,
                                                                                                           new_var_info,
-                                                                                                          num_scatter_save_path)
+                                                                                                          num_scatter_save_path,
+                                                                                                          calib_paths,
+                                                                                                          merge_paths,
+                                                                                                          init_paths)
     if with_pca != 0:
         pca = PCA(n_components=with_pca)
         train_data = pca.fit_transform(train_data)
@@ -96,6 +110,7 @@ def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sav
 
 
 def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
+    """"Loader for the bg70V data (real data)"""
     calib_file_paths = [os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1505_bg70V_z14lite.root"),
                         os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1505r_bg70V_z14lite.root"),
                         os.path.relpath("../../data/bg70V/calib_Prodv5-6-3_1506_bg70V_z14lite.root")]
@@ -123,6 +138,7 @@ def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
 
 
 def wimp_vs_photo_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, include_real=False, with_pca=0):
+    """Data loader for wimp vs photoneutron (or any other type of data for that matter) classification."""
     calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root"), "photo"],
                    [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root"), "wimp"]]
     merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root"), "photo"],
@@ -154,6 +170,7 @@ def wimp_vs_photo_data_loader(rq_var_names, rrq_var_names, new_var_info, num_sca
 
 
 def w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths, init_paths, dets):
+    """Helper function for wimp_vs_photo_data_loader"""
     train_data = []
     train_targets = []
     test_data = []
@@ -197,7 +214,7 @@ def w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sa
                                                                                        rrq_var_names +
                                                                                        new_var_info["names"],
                                                                                        "Single?", 0.8, energies)
-        # TODO: Make targets dependent on data_type_variable (i.e. replace tr_targets and t_targets)
+
         if data_type == "wimp":
             tr_targets = np.zeros(np.shape(tr_data)[0])
             t_targets = np.zeros(np.shape(t_data)[0])
@@ -216,6 +233,8 @@ def w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sa
 
 
 def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
+    """"Loads both the real bg70V data and the simulated data provided in the *_paths and *_file_paths below
+    and performs pca dimensionality reduction on both at once if with_pca>0"""
     calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
     merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
     init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
@@ -255,7 +274,9 @@ def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, n
 
     return sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names, train_data, test_data, test_dict, variables, feature_names
 
+
 def real_data_loader(rq_var_names, rrq_var_names, calib_paths, merge_paths, dets):
+    """Base data loading function for real data from the file paths provided"""
     train_data = []
     test_data = []
     test_dict = []
@@ -287,6 +308,7 @@ def real_data_loader(rq_var_names, rrq_var_names, calib_paths, merge_paths, dets
 
 
 def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths, init_paths, dets):
+    """Base data loading function for simulated data from the file paths provided"""
     train_data = []
     train_targets = []
     test_data = []
@@ -340,6 +362,7 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
     return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
 
 
+# HELPER FUNCTIONS
 def get_num_scatters(init_path, save_path, det=None, write=True):
     init = loadmat(init_path)
     # Get event number for each scatter
@@ -405,8 +428,7 @@ def get_num_scatters(init_path, save_path, det=None, write=True):
 def get_branches(merge, branches, det=None, tree=None, normalize=True):
     if tree is None:
         tree = merge["zip{}".format(det)]
-    # print(tree.keys())
-    # print(len(tree.keys()))
+
     evs_raw = merge["eventTree"]["EventNumber"].array().astype(int)
     raw_branches = {}
     for branch in branches:
