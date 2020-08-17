@@ -3,6 +3,8 @@ from sklearn.metrics import confusion_matrix
 
 
 def build_confusion_matrix(model, dataloader, number_of_classes, cls, device):
+    """ Builds a confusion matrix based on the given model and dataloader.
+        https://en.wikipedia.org/wiki/Confusion_matrix"""
     untrained_cls = list(range(number_of_classes))
     for t in cls:
         untrained_cls.remove(t)
@@ -46,6 +48,7 @@ def build_confusion_matrix(model, dataloader, number_of_classes, cls, device):
 
 
 def compute_accuracy(predictions, targets):
+    """Computes an accuracy based on the given predictions and targets"""
     assert len(predictions) == len(targets)
 
     accuracy_array = []

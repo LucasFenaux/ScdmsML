@@ -3,8 +3,8 @@ import numpy as np
 import torch.nn as nn
 
 
-
 def cut_energy(variables, energies, cut=10):
+    """ Cut events based on the given cut variable value"""
     new_vars = []
     new_energies = []
     for v in range(len(variables)):
@@ -17,6 +17,7 @@ def cut_energy(variables, energies, cut=10):
 
 
 def generate_fit_matrix(variables, feature_names, target_name, fraction, energies):
+    """" Generates the data matrices as well as the target arrays"""
     matrix = []
     targets = []
 
@@ -42,6 +43,7 @@ def generate_fit_matrix(variables, feature_names, target_name, fraction, energie
 
 
 def generate_unsupervised_fit_matrix(variables, feature_names, fraction, energies):
+    """ Generates the data matrix but no target array"""
     matrix = []
 
     test_matrix = []
@@ -173,6 +175,7 @@ def plot_output(scores, split_scores, test_matrix, test_targets, test_dict, save
 
 
 class ListModule(nn.Module):
+    """ Module used for Pytorch to construct module made of multiple layers """
     def __init__(self, *args):
         super(ListModule, self).__init__()
         idx = 0
@@ -200,7 +203,10 @@ class AverageMeter(object):
        Imported from https://github.com/pytorch/examples/blob/master/imagenet/main.py#L247-L262
     """
     def __init__(self):
-        self.reset()
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
 
     def reset(self):
         self.val = 0

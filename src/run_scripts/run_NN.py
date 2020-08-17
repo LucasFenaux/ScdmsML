@@ -2,9 +2,6 @@ import torch
 import torch.optim as optim
 import numpy as np
 from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.model_selection import cross_val_score
-
 from ScdmsML.src.models import NeuralNetwork
 from ScdmsML.src.main_scripts import train_nn
 from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader
@@ -99,80 +96,6 @@ rrq_var_names = ['paOF', 'paOF0', 'paOF0c', 'paOFc', 'paampres', 'padelayres', '
 #                  'pprimechaniOF', 'prdelWK', 'ptNF',
 #                  'ptOF', 'pxdelWK', 'pxpartOF', 'pydelWK', 'pypartOF', 'qiOF', 'qoOF', 'qrpartOF']
 
-# yet to test
-# rq_var_names = ['PCTFPchisq', 'PTOFamps']
-# rrq_var_names = ['ptNF0c', 'pminrtOFWK_1070']
-
-
-# RQs and RRQs from pca
-# Similar shape RQs and RRQs
-
-# Group 1: best NN acc: 0.6322
-
-# Results:
-# [[12201.     0.]
-#  [ 7098.     0.]]
-# Final Torch Loss:  0.23185645601422739
-# Final Torch Err:  tensor(0.6322)
-# rq_var_names = ["PATFPeflag"]
-# rrq_var_names = ['pminrtWK_1070']
-
-# Results:
-# [[12201.     0.]
-#  [ 7098.     0.]]
-# Final Torch Loss:  0.23185370656513843
-# Final Torch Err:  tensor(0.6322)
-# rq_var_names = ['PBTFPeflag']
-# rrq_var_names = ['pminrtWK_1040']
-
-# Results:
-# [[11896.   305.]
-#  [ 6374.   724.]]
-# Final Torch Loss:  0.22629748456169252
-# Final Torch Err:  tensor(0.6539)
-# rq_var_names = ['PCTFPeflag']
-# rrq_var_names = ['ptNF0uc']
-
-# Results:
-# [[12201.     0.]
-#  [ 7098.     0.]]
-# Final Torch Loss:  0.23185044745193642
-# Final Torch Err:  tensor(0.6322)
-# rq_var_names = ['PDTFPeflag']
-# rrq_var_names = ['pminrtWK_10100']
-
-# Group 2: best NN acc: 0.6539
-
-# Results:
-# [[11896.   305.]
-#  [ 6374.   724.]]
-# Final Torch Loss:  0.22624048697243063
-# Final Torch Err:  tensor(0.6539)
-# rq_var_names = ["PBTFPoffset"]
-# rrq_var_names = ["ptNF"]
-
-# Results:
-# [[11896.   305.]
-#  [ 6374.   724.]]
-# Final Torch Loss:  0.22619099729476538
-# Final Torch Err:  tensor(0.6539)
-# rq_var_names = ["PBTFPchisq"]
-# rrq_var_names = ["ptNF0"]
-
-# Group 3: best NN acc: 0.6354
-# Results:
-# [[11748.   453.]
-#  [ 6583.   515.]]
-# Final Torch Loss:  0.23117222767801884
-# Final Torch Err:  tensor(0.6354)
-# rq_var_names = ["PTPSDint0to1"]
-# rrq_var_names = ['pminrtOFWK_10100']
-
-
-# Run variables
-# rq_var_names = ["PATFPeflag", "PBTFPoffset", "PTPSDint0to1"]
-# rrq_var_names = ['pminrtWK_1070', "ptNF", 'pminrtOFWK_10100']
-
 new_var_names = ["PXTFPchisq", "PYTFPchisq"]
 new_var_inputs = [["PDTFPchisq", "PBTFPchisq", "PCTFPchisq"], ["PDTFPchisq", "PBTFPchisq", "PCTFPchisq"]]
 new_var_funcs = [lambda args: (cos(radians(30)) * args[0] + cos(radians(150)) * args[1] + cos(radians(270)) * args[2]),
@@ -198,7 +121,6 @@ def train_torch_model(pca=0):
     else:
         # sizes = [32, 50, 50, 2]
         sizes = [285, 200, 100, 2]
-
 
     nn = NeuralNetwork(sizes=sizes).to(device)
 
