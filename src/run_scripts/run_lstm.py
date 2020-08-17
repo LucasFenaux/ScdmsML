@@ -1,6 +1,5 @@
 import torch
 import torch.optim as optim
-
 from ScdmsML.src.models import LSTM
 from ScdmsML.src.main_scripts import train_nn
 from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix

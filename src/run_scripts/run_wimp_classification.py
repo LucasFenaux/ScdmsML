@@ -1,26 +1,12 @@
 from math import cos, sin, radians
-from ScdmsML.src.utils import sklearn_data_loader, bg70V_sklearn_dataloader, bg70_and_sim_sklearn_dataloader
-from sklearn import metrics
-from sklearn.cluster import KMeans, spectral_clustering, OPTICS
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from ScdmsML.src.utils.eval import compute_accuracy
-from torch.utils.data import TensorDataset, RandomSampler, DataLoader
-from ScdmsML.src.models import NeuralNetwork
-from ScdmsML.src.main_scripts import train_nn
 from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader, wimp_vs_photo_data_loader
 from sklearn.neural_network import MLPClassifier
 import torch
-import torch.optim as optim
-
-
 import os
 import numpy as np
 from time import time
 
 # Global Variable
-det = 14
 # All available RQs and RRQs
 # rq_var_names = ['PAOFamps', 'PAOFamps0', 'PAOFchisq', 'PAOFchisqLF', 'PAOFdelay', 'PATFPamp', 'PATFPchisq',
 #                  'PATFPeflag', 'PATFPint', 'PATFPoffset', 'PATFPtau', 'PAWKf20', 'PAWKf40', 'PAWKf80', 'PAWKf90',
@@ -63,7 +49,6 @@ det = 14
 
 rrq_var_names = ['paOF', 'paOF0', 'paOF0c', 'paOFc', 'paampres', 'padelayres', 'pbOF', 'pbOF0', 'pbOF0c', 'pbOFc',
                  'pbampres', 'pbdelayres', 'pcOF', 'pcOF0', 'pcOF0c', 'pcOFc', 'pcampres', 'pcdelayres', 'pdOF']
-# rrq_var_names = []
 rq_var_names = []
 
 
@@ -87,7 +72,6 @@ def do_nn(pca=0):
     model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="adam", activation="relu"
                           , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
     acc = model.score(sim_test_data, sim_test_targets)
-    # acc = cross_val_score(model, train_data, train_targets, cv=5)
     print("Sklearn acc:", acc)
 
 

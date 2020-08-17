@@ -2,13 +2,9 @@ import torch
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+
 import warnings
 warnings.filterwarnings("ignore")
-from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
-from sklearn.metrics import confusion_matrix
 from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader
 
 from math import cos, sin, radians
