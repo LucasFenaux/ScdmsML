@@ -1,10 +1,9 @@
 import torch.nn as nn
 import torch
 
-# source: https://www.kaggle.com/purplejester/a-simple-lstm-based-time-series-classifier
+# Modified source: https://www.kaggle.com/purplejester/a-simple-lstm-based-time-series-classifier
 
 class LSTMClassifier(nn.Module):
-    """Very simple implementation of LSTM-based time-series classifier."""
 
     def __init__(self, input_dim, hidden_dim, layer_dim, output_dim=2):
         super().__init__()

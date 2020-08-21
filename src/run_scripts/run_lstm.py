@@ -43,7 +43,7 @@ def train_torch_model():
     train_loader, test_loader = torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path,
                                                   det=14, batch_size=batch_size, num_workers=num_workers,
                                                   pin_memory=pin_memory)
-
+    
     for _ in range(epochs):
         # for param in nn.parameters():
         #     print(param)
