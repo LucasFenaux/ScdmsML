@@ -101,11 +101,38 @@ batch_size = 256
 
 
 def do_k_means_on_real(k=2, pca=0):
-    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables \
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables\
         , sim_feature_names, train_data, test_data, test_dict, variables, feature_names = \
         bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
 
     # train Kmeans on the real data then test it on the simulated test data
+    k_means_helper(train_data, sim_test_data, sim_test_targets, k, pca)
+
+    return
+
+
+def do_k_means_on_simulated(k=2, pca=0):
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables = \
+        sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+
+    # train and test Kmeans on the simualted data
+    k_means_helper(sim_train_data, sim_test_data, sim_test_targets, k, pca)
+
+    return
+
+
+def do_k_means_on_sim_and_real(k=2, pca=0):
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables\
+        , sim_feature_names, train_data, test_data, test_dict, variables, feature_names = \
+        bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+
+    # train Kmeans on both the real and simulated data then test it on the simulated test data
+    all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
+
+    k_means_helper(all_data, sim_test_data, sim_test_targets, k, pca)
+
+
+def k_means_helper(train_data, test_data, test_targets, k=2, pca=0):
     k_means = KMeans(n_init=100, max_iter=1000, n_clusters=k, verbose=1, n_jobs=-1).fit(train_data)
     print("cluster proportions:")
     for cluster in np.unique(k_means.labels_):
@@ -113,12 +140,12 @@ def do_k_means_on_real(k=2, pca=0):
     print("### Other metrics ###")
 
     # compute accuracy of the model
-    sim_preds = k_means.predict(sim_test_data)
+    sim_preds = k_means.predict(test_data)
 
-    print("sim target proportions:0:", len(sim_test_targets) - sum(sim_test_targets), " | 1:", sum(sim_test_targets))
+    print("sim target proportions:0:", len(test_targets) - sum(test_targets), " | 1:", sum(test_targets))
     print("sim predicted proportions:0:", len(sim_preds) - sum(sim_preds), " | 1:", sum(sim_preds))
 
-    accuracy = compute_accuracy(sim_preds, sim_test_targets)
+    accuracy = compute_accuracy(sim_preds, test_targets)
 
     # since this is unsupervised, we need to check if the labels of the clusters is flipped
     flipped_sim_preds = np.zeros(np.shape(sim_preds))
@@ -126,14 +153,17 @@ def do_k_means_on_real(k=2, pca=0):
         if value == 0:
             flipped_sim_preds[idx] = 1
 
-    flipped_accuracy = compute_accuracy(flipped_sim_preds, sim_test_targets)
+    flipped_accuracy = compute_accuracy(flipped_sim_preds, test_targets)
     accuracy = max(accuracy, flipped_accuracy)
     print("Model accuracy:", accuracy)
 
-    visualize_k_clustering(sim_test_data, sim_test_targets, k_means, dims=pca, k=k)
+    visualize_k_clustering(test_data, test_targets, k_means, dims=pca, k=k)
 
     return
 
 
 if __name__ == '__main__':
-    do_k_means_on_real(k=2, pca=2)
+    # Chose which script you want to run with which parameters
+
+    # do_k_means_on_real(k=2, pca=2)
+    do_k_means_on_simulated(k=2, pca=0)
