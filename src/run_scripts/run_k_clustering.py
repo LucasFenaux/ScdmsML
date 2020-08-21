@@ -1,5 +1,5 @@
 from math import cos, sin, radians
-from ScdmsML.src.utils import bg70_and_sim_sklearn_dataloader
+from ScdmsML.src.utils import bg70_and_sim_sklearn_dataloader, compute_accuracy
 from sklearn.cluster import KMeans, OPTICS
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -287,6 +287,18 @@ def do_k_clustering(k=2, pca=0):
     #          metrics.silhouette_score(train_data, k_means.labels_,
     #                                   metric='euclidean',
     #                                   sample_size=len(train_targets))))
+
+    accuracy = compute_accuracy(sim_preds, sim_test_targets)
+
+    # since this is unsupervised, we need to check if the labels of the clusters is flipped
+    flipped_sim_preds = np.zeros(np.shape(sim_preds))
+    for idx, value in enumerate(sim_preds):
+        if value == 0:
+            flipped_sim_preds[idx] = 1
+
+    flipped_accuracy = compute_accuracy(flipped_sim_preds, sim_test_targets)
+    accuracy = max(accuracy, flipped_accuracy)
+    print("Model accuracy:", accuracy)
 
     visualize_k_clustering(sim_test_data, sim_test_targets, k_means, dims=pca, k=k)
 

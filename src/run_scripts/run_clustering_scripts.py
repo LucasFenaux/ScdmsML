@@ -1,9 +1,10 @@
 from math import cos, sin, radians
-from ScdmsML.src.utils import bg70_and_sim_sklearn_dataloader
 from sklearn.cluster import KMeans, OPTICS
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from ScdmsML.src.utils import build_confusion_matrix, sklearn_data_loader, compute_accuracy
+from ScdmsML.src.utils import build_confusion_matrix, sklearn_data_loader, compute_accuracy,\
+    bg70_and_sim_sklearn_dataloader
+from ScdmsML.src.run_scripts.run_k_clustering import visualize_k_clustering
 from sklearn.neural_network import MLPClassifier
 import torch
 
@@ -129,8 +130,10 @@ def do_k_means_on_real(k=2, pca=0):
     accuracy = max(accuracy, flipped_accuracy)
     print("Model accuracy:", accuracy)
 
+    visualize_k_clustering(sim_test_data, sim_test_targets, k_means, dims=pca, k=k)
+
     return
 
 
 if __name__ == '__main__':
-    do_k_means_on_real(k=2, pca=0)
+    do_k_means_on_real(k=2, pca=2)
