@@ -112,7 +112,7 @@ def do_k_means_on_real(k=2, pca=0):
 
 
 def do_k_means_on_simulated(k=2, pca=0):
-    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables = \
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, test_dict, variables, feature_names =\
         sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
 
     # train and test Kmeans on the simualted data
@@ -163,7 +163,8 @@ def k_means_helper(train_data, test_data, test_targets, k=2, pca=0):
 
 
 if __name__ == '__main__':
-    # Chose which script you want to run with which parameters
+    # Choose which script you want to run with which parameters
 
     # do_k_means_on_real(k=2, pca=2)
-    do_k_means_on_simulated(k=2, pca=0)
+    do_k_means_on_simulated(k=2, pca=2)
+    # do_k_means_on_sim_and_real(k=2, pca=2)
