@@ -182,13 +182,6 @@ def do_optics_with_real(k=2, pca=0):
     # for cluster in np.unique(optics.labels_):
     #     print(cluster, list(optics.labels_).count(cluster))
     # print(optics.cluster_hierarchy_)
-    # create fake targets for real data
-    fake_targets = np.array([2]*np.shape(train_data)[0])
-    assert np.shape(fake_targets)[0] == np.shape(train_data)[0]
-
-    sim_train_targets = np.array(sim_train_targets)
-    all_targets = np.hstack((sim_train_targets, fake_targets))
-    assert np.shape(all_data)[0] == np.shape(all_targets)[0]
 
     cluster_mapping = {}
 
