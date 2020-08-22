@@ -136,7 +136,7 @@ def do_optics_with_sim(pca=0):
     pred_targets = []
     for index, value in enumerate(optics.labels_):
         pred_targets.append(cluster_mapping[value])
-    pred_targets = np.array(sim_train_targets)
+    pred_targets = np.array(pred_targets)
 
     accuracy = compute_accuracy(pred_targets, sim_test_targets)
     print(accuracy)
