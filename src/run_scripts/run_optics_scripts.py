@@ -122,6 +122,8 @@ def do_optics_with_sim(pca=0):
     sim_train_targets = np.array(sim_train_targets)
 
     for cluster in np.unique(optics.labels_):
+        if cluster == -1:
+            continue
         indices = np.array([index for index, value in enumerate(optics.labels_) if value == cluster])
         cluster_labels = sim_train_targets[indices]
         if sum(cluster_labels) > float(len(cluster_labels)) / 2.:
@@ -131,7 +133,10 @@ def do_optics_with_sim(pca=0):
 
     pred_targets = []
     for index, value in enumerate(optics.labels_):
-        pred_targets.append(cluster_mapping[value])
+        if value == -1:  # the point is considered as noise so we just label it as its original label
+            pred_targets.append(sim_train_targets[index])
+        else:
+            pred_targets.append(cluster_mapping[value])
     pred_targets = np.array(pred_targets)
 
     # since the optics process can take a long time, once one has found good hyper-parameters, instead of re-running it
@@ -181,36 +186,45 @@ def do_optics_with_real_and_sim(pca=0):
     for cluster in np.unique(optics.labels_):
         indices = np.array([index for index, value in enumerate(optics.labels_) if value == cluster])
         if cluster == -1:
-            pass
-        else:
-            cluster_labels = all_targets[indices]
-            cluster_score = 0
-            cluster_points = 0
-            for label in cluster_labels:
-                if label == 2:  # real data so we can't count it in the relabelling process
-                    continue
-                else:
-                    cluster_score += label
-                    cluster_points += 1
-            if cluster_points > 2*cluster_score:
-                cluster_mapping[cluster] = 0
+            continue
+        cluster_labels = all_targets[indices]
+        cluster_score = 0
+        cluster_points = 0
+        for label in cluster_labels:
+            if label == 2:  # real data so we can't count it in the relabelling process
+                continue
             else:
-                cluster_mapping[cluster] = 1
+                cluster_score += label
+                cluster_points += 1
+        if cluster_points > 2*cluster_score:
+            cluster_mapping[cluster] = 0
+        else:
+            cluster_mapping[cluster] = 1
 
     pred_targets = []
     for index, value in enumerate(optics.labels_):
         if value == -1:  # the point is considered as noise so we just label it as its original label
-            pred_targets.append(sim_train_targets[index])
+            if index >= np.shape(sim_train_targets)[0]:  # it's real data
+                pred_targets.append(2)
+            else:
+                pred_targets.append(sim_train_targets[index])
         else:
             pred_targets.append(cluster_mapping[value])
     pred_targets = np.array(pred_targets)
+    np.save("recomputed_real_and_sim_targets.npy", pred_targets)
+
+    # we ignore the noisy real data
+    indices = np.where(pred_targets == 2)
+    all_data = np.delete(all_data, indices)
+    pred_targets = np.delete(pred_targets, indices)
 
     model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu"
-                          , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, pred_targets)
+                          , max_iter=1000, n_iter_no_change=50, verbose=1).fit(all_data, pred_targets)
     acc = model.score(sim_test_data, sim_test_targets)
 
     print("Sklearn acc:", acc)
     
 
 if __name__ == '__main__':
-    do_optics_with_sim(pca=2)
+    # do_optics_with_sim(pca=2)
+    do_optics_with_real_and_sim(pca=2)
