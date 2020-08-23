@@ -104,7 +104,7 @@ def do_optics_with_sim(pca=0):
         = sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
 
     print(np.shape(sim_train_data))
-    optics = OPTICS(min_samples=2, max_eps=1, n_jobs=-1).fit(sim_train_data)
+    optics = OPTICS(min_samples=5, n_jobs=-1).fit(sim_train_data)
 
     # To see all the created clusters
     # -1 represents what the algorithm considers as noise, if there is too many elements, re-run with modified
@@ -163,6 +163,7 @@ def do_optics_with_real_and_sim(pca=0):
                                                                                                      num_scatter_save_path,
                                                                                                      with_pca=pca)
     all_data = np.ma.concatenate([sim_train_data, train_data], axis=0)
+    print(np.shape(all_data))
 
     # create fake targets for real data
     fake_targets = np.array([2]*np.shape(train_data)[0])
@@ -226,5 +227,5 @@ def do_optics_with_real_and_sim(pca=0):
     
 
 if __name__ == '__main__':
-    # do_optics_with_sim(pca=2)
-    do_optics_with_real_and_sim(pca=2)
+    do_optics_with_sim(pca=0)
+    # do_optics_with_real_and_sim(pca=2)

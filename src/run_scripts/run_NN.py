@@ -149,8 +149,8 @@ def train_sklearn_model():
                                                                                            new_var_info,
                                                                                            num_scatter_save_path)
 
-    model = MLPClassifier(hidden_layer_sizes=(30, 30), solver="adam", activation="relu", learning_rate="constant"
-                          , max_iter=100, n_iter_no_change=10, verbose=1).fit(train_data, train_targets)
+    model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu",
+                          max_iter=1000, n_iter_no_change=50, verbose=1).fit(train_data, train_targets)
     # model = RandomForestClassifier(n_estimators=10, n_jobs=6)#.fit(train_data, train_targets)
     # model = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=5, random_state=0).fit(train_data, train_targets)
     # print(model.predict_proba(test_data))
@@ -179,5 +179,5 @@ def error_function(model, batch_loader):
 
 
 if __name__ == '__main__':
-    train_torch_model(30)
-    # train_sklearn_model()
+    # train_torch_model(30)
+    train_sklearn_model()
