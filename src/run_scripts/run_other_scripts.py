@@ -1,10 +1,9 @@
 from math import cos, sin, radians
-from ScdmsML.src.utils import bg70_and_sim_sklearn_dataloader, compute_accuracy
-from sklearn.cluster import KMeans, OPTICS
+from ScdmsML.src.utils import compute_accuracy
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from ScdmsML.src.utils import build_confusion_matrix, sklearn_data_loader
-from sklearn.neural_network import MLPClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier, GradientBoostingClassifier
 import torch
 
 
@@ -100,5 +99,51 @@ batch_size = 256
 
 
 def run_bdt():
+    print("Running bdt classification")
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = \
         sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path)
+    model = AdaBoostClassifier(DecisionTreeClassifier(), algorithm="SAMME", n_estimators=200).fit(train_data,
+                                                                                                  train_targets)
+    print("feature importance", model.feature_importances_)
+
+    predictions = model.predict(test_data)
+
+    accuracy = compute_accuracy(predictions, test_targets)
+    print(accuracy)
+
+    return
+
+
+def run_random_forest():
+    print("Running random forest classification")
+    train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = \
+        sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path)
+    model = RandomForestClassifier(n_estimators=100, n_jobs=-1).fit(train_data, train_targets)
+
+    predictions = model.predict(test_data)
+
+    accuracy = compute_accuracy(predictions, test_targets)
+    print(accuracy)
+
+    return
+
+
+def run_gradient_boosting():
+    print("Running gradient boosting classification")
+    train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = \
+        sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path)
+    model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=0)\
+        .fit(train_data, train_targets)
+
+    predictions = model.predict(test_data)
+
+    accuracy = compute_accuracy(predictions, test_targets)
+    print(accuracy)
+
+    return
+
+
+if __name__ == '__main__':
+    run_bdt()
+    run_gradient_boosting()
+    run_random_forest()
