@@ -1,11 +1,8 @@
 from math import cos, sin, radians
-from sklearn.cluster import KMeans, OPTICS
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from sklearn.cluster import KMeans
 from ScdmsML.src.utils import build_confusion_matrix, sklearn_data_loader, compute_accuracy,\
     bg70_and_sim_sklearn_dataloader
 from ScdmsML.src.run_scripts.run_k_clustering import visualize_k_clustering
-from sklearn.neural_network import MLPClassifier
 import torch
 
 

@@ -26,7 +26,6 @@ def train_nn(batch_loader: DataLoader, model: torch.nn.Module, criterion, optimi
         inputs = inputs.to(device)
         target = target.to(device).to(torch.double)
         output = model(inputs).to(torch.double)
-        # print(output.to(torch.device("cpu")), target.to(torch.device("cpu")))
 
         # cast to double otherwise BCE/MSE is not happy
         total_loss = criterion(output, target)

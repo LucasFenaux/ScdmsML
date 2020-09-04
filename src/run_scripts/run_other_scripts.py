@@ -1,6 +1,5 @@
 from math import cos, sin, radians
 from ScdmsML.src.utils import compute_accuracy
-import matplotlib.pyplot as plt
 from ScdmsML.src.utils import build_confusion_matrix, sklearn_data_loader
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier, GradientBoostingClassifier

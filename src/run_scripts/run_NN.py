@@ -1,7 +1,7 @@
 import torch
 import torch.optim as optim
 import numpy as np
-from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.neural_network import MLPClassifier
 from ScdmsML.src.models import NeuralNetwork
 from ScdmsML.src.main_scripts import train_nn
 from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader
@@ -119,7 +119,6 @@ def train_torch_model(pca=0):
     if pca != 0:
         sizes = [pca, 50, 50, 2]
     else:
-        # sizes = [32, 50, 50, 2]
         sizes = [285, 200, 100, 2]
 
     nn = NeuralNetwork(sizes=sizes).to(device)
@@ -131,8 +130,6 @@ def train_torch_model(pca=0):
                                                   pin_memory=pin_memory, with_pca=pca)
 
     for _ in range(epochs):
-        # for param in nn.parameters():
-        #     print(param)
         loss = train_nn(train_loader, nn, criterion, optimizer, False, device)
         err = error_function(nn, test_loader)
         print("Err: ", err)
@@ -151,11 +148,8 @@ def train_sklearn_model():
 
     model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="sgd", activation="relu",
                           max_iter=1000, n_iter_no_change=50, verbose=1).fit(train_data, train_targets)
-    # model = RandomForestClassifier(n_estimators=10, n_jobs=6)#.fit(train_data, train_targets)
-    # model = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=5, random_state=0).fit(train_data, train_targets)
-    # print(model.predict_proba(test_data))
+
     acc = model.score(test_data, test_targets)
-    # acc = cross_val_score(model, train_data, train_targets, cv=5)
     print("Sklearn acc:", acc)
 
 

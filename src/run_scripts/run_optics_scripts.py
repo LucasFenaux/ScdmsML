@@ -1,16 +1,11 @@
 from math import cos, sin, radians
 from ScdmsML.src.utils import bg70_and_sim_sklearn_dataloader, compute_accuracy
-from sklearn.cluster import KMeans, OPTICS
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from sklearn.cluster import OPTICS
 from ScdmsML.src.utils import build_confusion_matrix, sklearn_data_loader
 from sklearn.neural_network import MLPClassifier
 import torch
-
-
 import os
 import numpy as np
-from time import time
 
 
 # All available RQs and RRQs
