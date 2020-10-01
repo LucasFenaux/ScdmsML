@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import src.Raw_data as RD
+from .Raw_data import read_file
 import pandas as pd
 import cdms
 
@@ -19,7 +19,7 @@ def get_all_events(filepaths):
     dfs = None
     for idx, filepath in enumerate(filepaths):
         try:
-            df = RD.read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
+            df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
         except:
             print("Problems reading dump ", idx)
             print("\t", filepath)
