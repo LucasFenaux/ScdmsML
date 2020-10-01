@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Raw_data as RD
+import src.Raw_data as RD
 import pandas as pd
 import cdms
 
@@ -29,4 +29,8 @@ def get_all_events(filepaths):
         else:
             dfs = pd.concat([dfs, df], axis=0)
 
+
+if __name__ == '__main__':
+    dfs = get_all_events("")
+    print(dfs['event number'])
 
