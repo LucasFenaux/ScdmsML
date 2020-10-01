@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from .Raw_data import read_file
+from Raw_data import read_file
 import pandas as pd
-import cdms
 
 # can only be run on a server that has cdms installed
 
@@ -18,19 +17,19 @@ reindex_const=50000
 def get_all_events(filepaths):
     dfs = None
     for idx, filepath in enumerate(filepaths):
-        try:
-            df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
-        except:
-            print("Problems reading dump ", idx)
-            print("\t", filepath)
-            continue
+        #try:
+        df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
+        #except:
+        #    print("Problems reading dump ", idx)
+        #    print("\t", filepath)
+        #    continue
         if dfs is None:
             dfs = df
         else:
             dfs = pd.concat([dfs, df], axis=0)
-
+    return dfs
 
 if __name__ == '__main__':
-    dfs = get_all_events("")
+    dfs = get_all_events(["../../../projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0001.gz"])
     print(dfs['event number'])
 

@@ -4,7 +4,6 @@ import pandas as pd
 import gzip
 import scipy.io
 import scipy.stats
-import ROOT
 import os, sys
 import numpy
 
