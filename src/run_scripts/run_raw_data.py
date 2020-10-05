@@ -30,6 +30,8 @@ def get_all_events(filepaths):
     return dfs
 
 if __name__ == '__main__':
-    dfs = get_all_events(["../../../projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0001.gz"])
+    # First file is data dump, DO NOT INCLUDE IT
+    dfs = get_all_events(["../../../projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0002.gz"])
     print(dfs['event number'])
-
+    print(dfs.columns)
+    print(dfs.iloc[[0, 1]])
