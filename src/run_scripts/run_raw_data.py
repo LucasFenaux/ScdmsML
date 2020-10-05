@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from ScdmsML.src.utils import get_all_events
+import sys
+sys.path.insert(0, '/home/fenauxlu/ScdmsML')
+from src.utils import get_all_events
 
 
 if __name__ == '__main__':
     # First file is data dump, DO NOT INCLUDE IT
     filepaths = []
-    for i in range(977, 2):
+    for i in range(2, 977):
         last_part = ""
         if i >= 100:
             last_part += str(i)

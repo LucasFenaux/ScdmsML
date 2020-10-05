@@ -6,7 +6,7 @@ import os
 import torch
 from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
-from Raw_data import read_file
+from .Raw_data import read_file
 import pandas as pd
 
 # files used for the experiments
@@ -43,6 +43,7 @@ def get_all_events(filepaths):
     reindex_const = 50000
     dfs = None
     for idx, filepath in enumerate(filepaths):
+        print(idx)
         # try:
         df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
         # except:
