@@ -6,6 +6,8 @@ import os
 import torch
 from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
+from Raw_data import read_file
+import pandas as pd
 
 # files used for the experiments
 # calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
@@ -31,6 +33,48 @@ from sklearn.decomposition import PCA
 # merge_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root")]]
 # init_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/Input_Supersim/Cf252_EStem_4.mat")]]
 # dets = [4]
+
+
+# TODO: make sure event numbers are the right numbers and do not need adjustment like in the get_full_data function
+def get_all_events(filepaths):
+    det = [14]
+    n_samples = 2048
+    chan_list = [0, 1, 2, 3, 4, 5]
+    reindex_const = 50000
+    dfs = None
+    for idx, filepath in enumerate(filepaths):
+        # try:
+        df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
+        # except:
+        #    print("Problems reading dump ", idx)
+        #    print("\t", filepath)
+        #    continue
+        if dfs is None:
+            dfs = df
+        else:
+            dfs = pd.concat([dfs, df], axis=0)
+    row_dict = extract_rows(dfs, n_samples)
+
+    return row_dict
+
+
+def extract_rows(df, n_samples=2048):
+    event_number = None
+    all_rows = {}
+    current_row = []
+    for idx, row in df.itterrows():
+        if event_number != row['event number']:
+            if len(current_row) > 0:
+                if event_number not in all_rows.keys():
+                    all_rows[event_number] = current_row
+                else:
+                    all_rows[event_number].extend(current_row)
+            event_number = row['event number']
+            current_row = []
+        for i in range(n_samples):
+            current_row.append(row[i])
+
+    return all_rows
 
 
 def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):

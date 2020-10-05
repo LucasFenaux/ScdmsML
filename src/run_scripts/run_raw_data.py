@@ -1,37 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Raw_data import read_file
-import pandas as pd
+from ScdmsML.src.utils import get_all_events
 
-# can only be run on a server that has cdms installed
-
-# first gonna write dataloading code here to test it, will move it to data_loading.py once it's working
-
-det = [14]
-n_samples = 2048
-chan_list = [0, 1, 2, 3, 4, 5]
-reindex_const=50000
-
-
-# TODO: make sure event numbers are the right numbers and do not need adjustment like in the get_full_data function
-def get_all_events(filepaths):
-    dfs = None
-    for idx, filepath in enumerate(filepaths):
-        #try:
-        df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
-        #except:
-        #    print("Problems reading dump ", idx)
-        #    print("\t", filepath)
-        #    continue
-        if dfs is None:
-            dfs = df
-        else:
-            dfs = pd.concat([dfs, df], axis=0)
-    return dfs
 
 if __name__ == '__main__':
     # First file is data dump, DO NOT INCLUDE IT
-    dfs = get_all_events(["../../../projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0002.gz"])
-    print(dfs['event number'])
-    print(dfs.columns)
-    print(dfs.iloc[[0, 1]])
+    filepaths = []
+    for i in range(977, 2):
+        last_part = ""
+        if i >= 100:
+            last_part += str(i)
+        elif i >= 10:
+            last_part = last_part + "0" + str(i)
+        else:
+            last_part = last_part + "00" + str(i)
+        last_part += ".gz"
+        filepaths.append("../../../projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0" + last_part)
+    row_dict = get_all_events(filepaths)
+    print(row_dict.keys())
+
