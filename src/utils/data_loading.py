@@ -63,7 +63,7 @@ def extract_rows(df, n_samples=2048):
     event_number = None
     all_rows = {}
     current_row = []
-    for idx, row in df.itterrows():
+    for idx, row in df.iterrows():
         if event_number != row['event number']:
             if len(current_row) > 0:
                 if event_number not in all_rows.keys():
