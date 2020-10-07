@@ -190,12 +190,12 @@ def read_file(fname,detlist=(4,),chanlist=(2,3,4,5,8,9,10,11),n_samples=4096,n_t
                 #print "event header", n_ev, len(unique(eventnum)), eventnum[n_read-1],
             #print
             
-    numpy.resize(traces, (n_read, traces.shape[1]))
-    numpy.resize(detnum, n_read)
-    numpy.resize(channum, n_read)
-    numpy.resize(eventnum, n_read)
-    numpy.resize(eventtype, n_read)
-    numpy.resize(eventcat, n_read)
+    traces.resize(n_read, traces.shape[1])
+    detnum.resize(n_read)
+    channum.resize(n_read)
+    eventnum.resize(n_read)
+    eventtype.resize(n_read)
+    eventcat.resize(n_read)
     #assert n_ev == len(unique(eventnum))
     df = pd.concat([pd.DataFrame({'event number':eventnum, 'detector number':detnum, 
                                   'event type': eventtype, 'channel number':channum,
