@@ -8,6 +8,8 @@ from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
 from .Raw_data import read_file
 import pandas as pd
+import logging
+#logging.basicConfig(filename='./data_loading_log.log', level=logging.DEBUG)
 
 # files used for the experiments
 # calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
@@ -43,24 +45,25 @@ def get_all_events(filepaths):
     reindex_const = 50000
     dfs = None
     for idx, filepath in enumerate(filepaths):
-        print(idx)
-        # try:
-        df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
-        # except:
-        #    print("Problems reading dump ", idx)
-        #    print("\t", filepath)
-        #    continue
+        try:
+            df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
+        except:
+             logging.error("Problems reading dump ", idx)
+             logging.error("\t", filepath)
+             continue
         if dfs is None:
             dfs = df
         else:
             dfs = pd.concat([dfs, df], axis=0)
+        logging.info("done concatonating df for {}".format(filepath))
+    logging.info("#######extracting rows")
     row_dict = extract_rows(dfs, n_samples)
-
+    logging.info("#######done extracting rows")
     return row_dict
 
 
 def extract_rows(df, n_samples=2048):
-    event_number = None
+    event_number = -1
     all_rows = {}
     current_row = []
     for idx, row in df.iterrows():
@@ -71,10 +74,18 @@ def extract_rows(df, n_samples=2048):
                 else:
                     all_rows[event_number].extend(current_row)
             event_number = row['event number']
+            logging.info("event number {}".format(event_number))
             current_row = []
         for i in range(n_samples):
             current_row.append(row[i])
-
+    if len(current_row) > 0:
+        if event_number not in all_rows.keys():
+            all_rows[event_number] = current_row
+        else:
+            all_rows[event_number].extent(current_row)
+    else:
+        logging.warning("last row to be extracted is somehow empty")
+    logging.info("done extracting rows")
     return all_rows
 
 
