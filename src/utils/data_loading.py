@@ -196,6 +196,26 @@ def wimp_vs_photo_data_loader(rq_var_names, rrq_var_names, new_var_info, num_sca
     return sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names
 
 
+def wimp_vs_calif_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, include_real=False, with_pca=0):
+    """Data loader for wimp vs photoneutron (or any other type of data for that matter) classification."""
+    calib_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root"), "calif"],
+                   [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root"), "wimp"]]
+    merge_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/merge_test_binary_01150401_1725.root"), "calif"],
+                   [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root"), "wimp"]]
+    init_paths = [[False, os.path.relpath("../../data/V1_5_CfVacuum/combined/calib_test_binary_01150401_1725.root"), "calif"],
+                   [True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat"), "wimp"]]
+    dets = [14, 4]
+    sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = \
+        w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths,
+                           init_paths, dets)
+
+    # perform PCA dimensionality reduction to the data
+    if with_pca > 0:
+        sim_train_data, sim_test_data = perform_pca_reduction(with_pca, sim_train_data, sim_test_data, sim_feature_names)
+
+    return sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names
+
+
 def w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths, init_paths, dets):
     """Helper function for wimp_vs_photo_data_loader"""
     train_data = []

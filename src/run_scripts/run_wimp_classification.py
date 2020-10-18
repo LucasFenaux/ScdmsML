@@ -1,5 +1,6 @@
 from math import cos, sin, radians
-from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix, data_loader, sklearn_data_loader, wimp_vs_photo_data_loader
+from src.utils.data_loading import torch_data_loader, data_loader, sklearn_data_loader, wimp_vs_photo_data_loader, wimp_vs_calif_data_loader
+from src.utils.eval import build_confusion_matrix
 from sklearn.neural_network import MLPClassifier
 import torch
 import os
@@ -67,13 +68,18 @@ batch_size = 256
 
 def do_nn(pca=0):
     sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names = wimp_vs_photo_data_loader(
-        rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca
-    )
-    model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="adam", activation="relu"
-                          , max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
+        rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+    model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="adam", activation="relu", max_iter=1000, n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
     acc = model.score(sim_test_data, sim_test_targets)
-    print("Sklearn acc:", acc)
+    print("Sklearn acc for wimp vs photo:", acc)
 
+    sim_train_data, sim_train_targets, sim_test_data, sim_test_targets, sim_test_dict, sim_variables, sim_feature_names = wimp_vs_calif_data_loader(
+        rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=pca)
+    model = MLPClassifier(hidden_layer_sizes=(100, 100), solver="adam", activation="relu", max_iter=1000,
+                          n_iter_no_change=50, verbose=1).fit(sim_train_data, sim_train_targets)
+    acc = model.score(sim_test_data, sim_test_targets)
+    print("Sklearn acc for wimp vs photo:", acc)
 
 if __name__ == '__main__':
-    do_nn(pca=2)
+    # do_nn(pca=2)
+    do_nn()

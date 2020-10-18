@@ -1,9 +1,8 @@
 import torch
-import torch.nn as nn
 import torch.optim as optim
-from ScdmsML.src.models import LSTMClassifier
-from ScdmsML.src.main_scripts import train_nn
-from ScdmsML.src.utils import torch_data_loader, build_confusion_matrix
+from src.models import LSTMClassifier
+from src.main_scripts import train_nn
+from src.utils import torch_data_loader, build_confusion_matrix
 
 from math import cos, sin, radians
 import os
@@ -43,7 +42,7 @@ def train_torch_model():
     train_loader, test_loader = torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path,
                                                   det=14, batch_size=batch_size, num_workers=num_workers,
                                                   pin_memory=pin_memory)
-    
+
     for _ in range(epochs):
         # for param in nn.parameters():
         #     print(param)
