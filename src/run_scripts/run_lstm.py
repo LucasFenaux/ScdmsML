@@ -35,7 +35,7 @@ def train_torch_model():
     hidden_size = 7
     num_layers = 1
 
-    nn = LSTMClassifier(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers).to(device)
+    nn = LSTMClassifier(input_size, hidden_size, num_layers).to(device)
 
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
 

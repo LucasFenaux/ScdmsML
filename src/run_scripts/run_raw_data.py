@@ -5,10 +5,17 @@ sys.path.insert(0, '/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML')
 # sys.path.insert(0, '/home/lucas/Documents/ScdmsML')
 # sys.path.insert(0, '/Users/GeorgesKanaan/Documents/Research/SuperCDMS/SCDMS_ML')
 # sys.path.insert(0, '/home/ge0rges/projects/rrg-mdiamond/fenauxlu/ScdmsML')
-from src.utils import get_all_events
+
+import torch
+import torch.optim as optim
+import pickle
 import logging
 logging.basicConfig(filename='./raw_data_log.log', level=logging.DEBUG)
-import pickle
+
+from src.utils import get_all_events, build_confusion_matrix
+from src.utils.data_loading import torch_raw_data_loader
+from src.models import LSTMClassifier
+from src.main_scripts import train_nn
 
 
 # Only run it once to preprocess the data
@@ -38,3 +45,62 @@ def pre_processing():
     for event in list(row_dict.keys()):
         np.save("../../data/raw_events/event_number_{}.npy".format(event), row_dict[event])
 
+def run_lstm():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    pin_memory = (device.type == "cuda")
+    num_workers = 4
+    batch_size = 256
+
+    criterion = torch.nn.CrossEntropyLoss()
+
+    epochs = 20
+    learning_rate = 0.1
+
+    input_size = 0
+    hidden_size = 0
+    num_layers = 0
+
+    nn = LSTMClassifier(input_size, hidden_size, num_layers).to(device)
+
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
+
+    train_loader, test_loader = torch_raw_data_loader(det=14, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
+
+    for _ in range(epochs):
+        # for param in nn.parameters():
+        #     print(param)
+        loss = train_nn(train_loader, nn, criterion, optimizer, False, device)
+        err = error_function(nn, test_loader)
+        print("Err: ", err)
+        print("Loss: ", loss)
+
+    # test the model
+    loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
+    err = error_function(nn, test_loader)
+    print("Final Torch Loss: ", loss)
+    print("Final Torch Err: ", err)
+
+
+def error_function(model, batch_loader):
+    """
+    Calculates a metric to judge model. Must return a float.
+    Metric is experiment dependent could be AUROC, Accuracy, Error....
+
+    Metric must be "higher is better" (eg. accuracy)
+
+    Do not modify params. Abstract method for all experiments.
+    """
+
+    confusion_matrix = build_confusion_matrix(model, batch_loader, number_of_classes, range(number_of_classes), device)
+    confusion_matrix = confusion_matrix.to(torch.device("cpu"))
+    # print(np.round(confusion_matrix.numpy()))
+
+    num_samples = sum(confusion_matrix.sum(1))
+    correctly_classified = sum(confusion_matrix.diag())
+
+    return correctly_classified / num_samples
+
+
+if __name__ == "__main__":
+    pre_processing()
+    run_lstm()

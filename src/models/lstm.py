@@ -1,9 +1,14 @@
+from typing import Any
+
 import torch.nn as nn
 import torch
 
 # Modified source: https://www.kaggle.com/purplejester/a-simple-lstm-based-time-series-classifier
 
 class LSTMClassifier(nn.Module):
+
+    def _forward_unimplemented(self, *input: Any) -> None:
+        pass
 
     def __init__(self, input_dim, hidden_dim, layer_dim, output_dim=2):
         super().__init__()
