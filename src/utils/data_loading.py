@@ -91,9 +91,9 @@ def extract_rows(df, n_samples=2048):
 
 def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
     """Basic data loader for any simulated data that returns numpy arrays for the data"""
-    calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
-    merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
-    init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+    calib_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root")]]
+    merge_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root")]]
+    init_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
     dets = [14]
 
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
@@ -114,9 +114,12 @@ def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_s
 def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, batch_size=256,
                       num_workers=1, pin_memory=False, with_pca=0):
     """Basic pytorch data loader for any simulated data"""
-    calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
-    merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
-    init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+    calib_paths = [[True, os.path.relpath(
+        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root")]]
+    merge_paths = [[True, os.path.relpath(
+        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root")]]
+    init_paths = [[True, os.path.relpath(
+        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
     dets = [14]
 
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
@@ -175,12 +178,12 @@ def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
 
 def wimp_vs_photo_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, include_real=False, with_pca=0):
     """Data loader for wimp vs photoneutron (or any other type of data for that matter) classification."""
-    calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root"), "photo"],
-                   [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/calib_test_binary_01150401_1725.root"), "wimp"]]
-    merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root"), "photo"],
-                   [True, os.path.relpath("../../data/V1_5_WIMP5/Processed/merge_test_binary_01150401_1725.root"), "wimp"]]
+    calib_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root"), "photo"],
+                   [True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-5_WIMP50/Processed/calib_test_binary_01140301_0038.root"), "wimp"]]
+    merge_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/test_binary_01140301_0038.root"), "photo"],
+                   [True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-5_WIMP50/Processed/calib_test_binary_01140301_0038.root"), "wimp"]]
     init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat"), "photo"],
-                   [True, os.path.relpath("../../data/V1_5_WIMP5/Input_SuperSim/input_5GeV_part2.mat"), "wimp"]]
+                   [True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat"), "wimp"]]
     dets = [14, 4]
     sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = \
         w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths,
@@ -259,9 +262,13 @@ def w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sa
 def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
     """"Loads both the real bg70V data and the simulated data provided in the *_paths and *_file_paths below
     and performs pca dimensionality reduction on both at once if with_pca>0"""
-    calib_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/calib_test_binary_01140301_0038_F_combined.root")]]
-    merge_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/test_binary_01140301_0038_F_combined.root")]]
-    init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+    calib_paths = [[True, os.path.relpath(
+        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root")]]
+    merge_paths = [[True, os.path.relpath(
+        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root")]]
+    init_paths = [[True, os.path.relpath(
+        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+
     dets = [14]
     sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = data_loader(rq_var_names,
                                                                                                           rrq_var_names,
