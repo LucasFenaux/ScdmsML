@@ -8,3 +8,4 @@ data/Production_Postprocessed/merge_LibSimProdv5-4_pn_Sb_T5Z2.root
 venv/
 data/
 src/results/
+*.pyc
