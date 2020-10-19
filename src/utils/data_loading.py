@@ -9,6 +9,8 @@ from sklearn.decomposition import PCA
 from .Raw_data import read_file
 import pandas as pd
 import logging
+
+cedar_username = "fenauxlu"
 #logging.basicConfig(filename='./data_loading_log.log', level=logging.DEBUG)
 
 # files used for the experiments
@@ -91,9 +93,9 @@ def extract_rows(df, n_samples=2048):
 
 def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
     """Basic data loader for any simulated data that returns numpy arrays for the data"""
-    calib_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root")]]
-    merge_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root")]]
-    init_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+    calib_paths = [[True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root".format(cedar_username))]]
+    merge_paths = [[True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root".format(cedar_username))]]
+    init_paths = [[True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat".format(cedar_username))]]
     dets = [14]
 
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
@@ -115,11 +117,11 @@ def torch_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_sav
                       num_workers=1, pin_memory=False, with_pca=0):
     """Basic pytorch data loader for any simulated data"""
     calib_paths = [[True, os.path.relpath(
-        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root")]]
+        "/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root".format(cedar_username))]]
     merge_paths = [[True, os.path.relpath(
-        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root")]]
+        "/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root".format(cedar_username))]]
     init_paths = [[True, os.path.relpath(
-        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+        "/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat".format(cedar_username))]]
     dets = [14]
 
     train_data, train_targets, test_data, test_targets, test_dict, variables, feature_names = data_loader(rq_var_names,
@@ -178,12 +180,12 @@ def bg70V_sklearn_dataloader(rq_var_names, rrq_var_names, with_pca=0):
 
 def wimp_vs_photo_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, include_real=False, with_pca=0):
     """Data loader for wimp vs photoneutron (or any other type of data for that matter) classification."""
-    calib_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root"), "photo"],
-                   [True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-5_WIMP50/Processed/calib_test_binary_01140301_0038.root"), "wimp"]]
-    merge_paths = [[True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/test_binary_01140301_0038.root"), "photo"],
-                   [True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-5_WIMP50/Processed/calib_test_binary_01140301_0038.root"), "wimp"]]
-    init_paths = [[True, os.path.relpath("../../data/V1_5_Photoneutron/combined/PhotoNeutronDMC_InitialTest10K_jswfix.mat"), "photo"],
-                   [True, os.path.relpath("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat"), "wimp"]]
+    calib_paths = [[True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root".format(cedar_username)), "photo"],
+                   [True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-5_WIMP50/Processed/calib_test_binary_01140301_0038.root".format(cedar_username)), "wimp"]]
+    merge_paths = [[True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/test_binary_01140301_0038.root".format(cedar_username)), "photo"],
+                   [True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-5_WIMP50/Processed/calib_test_binary_01140301_0038.root".format(cedar_username)), "wimp"]]
+    init_paths = [[True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat"), "photo"],
+                   [True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat".format(cedar_username)), "wimp"]]
     dets = [14, 4]
     sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = \
         w_vs_p_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, calib_paths, merge_paths,
@@ -283,11 +285,11 @@ def bg70_and_sim_sklearn_dataloader(rq_var_names, rrq_var_names, new_var_info, n
     """"Loads both the real bg70V data and the simulated data provided in the *_paths and *_file_paths below
     and performs pca dimensionality reduction on both at once if with_pca>0"""
     calib_paths = [[True, os.path.relpath(
-        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root")]]
+        "/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root".format(cedar_username))]]
     merge_paths = [[True, os.path.relpath(
-        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root")]]
+        "/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/merge_test_binary_01140301_0038.root".format(cedar_username))]]
     init_paths = [[True, os.path.relpath(
-        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat")]]
+        "/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat".format(cedar_username))]]
 
     dets = [14]
     sim_train_data, train_targets, sim_test_data, test_targets, sim_test_dict, sim_variables, sim_feature_names = data_loader(rq_var_names,
@@ -387,6 +389,7 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
         variables = merge_variables(variables, get_branches(merge, rrq_var_names, tree=calib, det=det), rrq_var_names)
 
         scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
+        event_numbers = list(single_scatter.keys())
         variables = add_to_variables(variables, "Single?", single_scatter, is_californium)
 
         energies = get_branches(merge, ["ptNF"], det=det, tree=calib, normalize=False)
@@ -414,6 +417,13 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
         feature_names.extend(features)
 
     return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
+
+
+def raw_data_loader(data_folder):
+    """ Pre-processing must have already been done, specify the folder where the numpy arrays are located as input.
+        There should be one file per event number"""
+
+
 
 
 # HELPER FUNCTIONS

@@ -42,8 +42,18 @@ def pre_processing():
     logging.info("size of the dict {}".format(sys.getsizeof(row_dict)))
     #with open('raw_data_dict.pickle', 'wb') as handle:
     #    pickle.dump(row_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    matrix = []
     for event in list(row_dict.keys()):
-        np.save("../../data/raw_events/event_number_{}.npy".format(event), row_dict[event])
+        # Apparently saving each array in its own file seems to be taking too much space
+        # also computecanada doesnt like many small files
+        # np.save("../../data/raw_events/event_number_{}.npy".format(event), row_dict[event])
+        # so we'll append the event number as the first value in the array for each event number and store them all in
+        # one big file
+        row_dict[event].insert(0, event)
+        matrix.append(row_dict[event])
+    matrix = np.ndarray(matrix)
+    np.save("../../data/raw_events/pre_processed_data.npy", matrix)
+
 
 def run_lstm():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
