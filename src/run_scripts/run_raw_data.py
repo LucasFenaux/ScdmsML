@@ -1,7 +1,11 @@
-import matplotlib.pyplot as plt
+from __future__ import absolute_import
 import numpy as np
 import sys
-sys.path.insert(0, '/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML')
+import os
+sys.path.insert(0, '/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/src')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 # sys.path.insert(0, '/home/lucas/Documents/ScdmsML')
 # sys.path.insert(0, '/Users/GeorgesKanaan/Documents/Research/SuperCDMS/SCDMS_ML')
 # sys.path.insert(0, '/home/ge0rges/projects/rrg-mdiamond/fenauxlu/ScdmsML')
@@ -13,8 +17,8 @@ import logging
 logging.basicConfig(filename='./raw_data_log.log', level=logging.DEBUG)
 
 from src.utils import get_all_events, build_confusion_matrix
-from src.utils.data_loading import torch_raw_data_loader
-from src.models import LSTMClassifier
+from src.utils.data_loading import torch_data_loader
+from src.models.lstm import LSTMClassifier
 from src.main_scripts import train_nn
 
 
@@ -32,8 +36,8 @@ def pre_processing():
             last_part = last_part + "00" + str(i)
         last_part += ".gz"
         #filepaths.append("../../data/Raw_data/libinput_sb-70V_F0" + last_part)
-        #filepaths.append("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0" + last_part)
-        filepaths.append("/home/ge0rges/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0" + last_part)
+        filepaths.append("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0" + last_part)
+        #filepaths.append("/home/ge0rges/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0" + last_part)
 
     logging.info("getting all events")
     row_dict = get_all_events(filepaths)
