@@ -430,9 +430,10 @@ def raw_data_loader(data_file, init_path, num_scatter_save_path, det=14):
     targets = []
     all_event_numbers = data[:, 0]
     target_event_numbers = []
-    data = np.delete(data, 1, axis=1)
+    data = np.delete(data, 0, axis=1)
     for row in range(np.shape(data)[0]):
         ev = all_event_numbers[row]
+        logging.info("processing event number {}".format(ev))
         if ev not in evs:
             data = np.delete(data, row, axis=0)
             continue
@@ -442,7 +443,7 @@ def raw_data_loader(data_file, init_path, num_scatter_save_path, det=14):
         logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
     else:
         logging.info("all raw data events were found in the init file")
-    return data, targets
+    return data, targets, target_event_numbers
 
 # HELPER FUNCTIONS
 def perform_pca_reduction(n_components, train_data, test_data, feature_names):

@@ -120,6 +120,6 @@ def error_function(model, batch_loader):
 
 
 if __name__ == "__main__":
-    raw_data_loader("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat")
+    raw_data_loader("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
     #pre_processing()
     #run_lstm()
