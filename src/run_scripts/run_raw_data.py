@@ -54,8 +54,8 @@ def pre_processing():
         # so we'll append the event number as the first value in the array for each event number and store them all in
         # one big file
         row_dict[event].insert(0, event)
-        matrix.append(row_dict[event])
-    matrix = np.ndarray(matrix)
+        matrix.append(np.array(row_dict[event]))
+    matrix = np.array(matrix)
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
 
@@ -116,5 +116,5 @@ def error_function(model, batch_loader):
 
 
 if __name__ == "__main__":
-    pre_processing()
-    run_lstm()
+    #pre_processing()
+    #run_lstm()
