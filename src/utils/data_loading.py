@@ -419,15 +419,32 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
     return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
 
 
-def raw_data_loader(data_folder):
-    """ Pre-processing must have already been done, specify the folder where the numpy arrays are located as input.
-        There should be one file per event number"""
+def raw_data_loader(data_file, init_path, num_scatter_save_path, det=14):
+    """ Pre-processing must have already been done, specify the file where the raw data is located"""
+    data = np.load(data_file)
+    scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
 
+    # get all the events number we have the truth value of
+    evs = list(single_scatter.keys())
 
-
+    targets = []
+    all_event_numbers = data[:, 0]
+    target_event_numbers = []
+    data = np.delete(data, 1, axis=1)
+    for row in range(np.shape(data)[0]):
+        ev = all_event_numbers[row]
+        if ev not in evs:
+            data = np.delete(data, row, axis=0)
+            continue
+        target_event_numbers.append(ev)
+        targets.append(single_scatter[ev])
+    if len(all_event_numbers) - len(target_event_numbers) > 0:
+        logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
+    else:
+        logging.info("all raw data events were found in the init file")
+    return data, targets
 
 # HELPER FUNCTIONS
-
 def perform_pca_reduction(n_components, train_data, test_data, feature_names):
     pca = PCA(n_components=n_components)
     train_data = pca.fit_transform(train_data)

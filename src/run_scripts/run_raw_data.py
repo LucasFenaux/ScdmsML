@@ -17,10 +17,14 @@ import logging
 logging.basicConfig(filename='./raw_data_log.log', level=logging.DEBUG)
 
 from src.utils import get_all_events, build_confusion_matrix
-from src.utils.data_loading import torch_data_loader
+from src.utils.data_loading import torch_data_loader, raw_data_loader
 from src.models.lstm import LSTMClassifier
 from src.main_scripts import train_nn
 
+num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+pin_memory = (device.type == "cuda")
 
 # Only run it once to preprocess the data
 def pre_processing():
@@ -105,7 +109,7 @@ def error_function(model, batch_loader):
     Do not modify params. Abstract method for all experiments.
     """
 
-    confusion_matrix = build_confusion_matrix(model, batch_loader, number_of_classes, range(number_of_classes), device)
+    confusion_matrix = build_confusion_matrix(model, batch_loader, 2, range(2), device)
     confusion_matrix = confusion_matrix.to(torch.device("cpu"))
     # print(np.round(confusion_matrix.numpy()))
 
@@ -116,5 +120,6 @@ def error_function(model, batch_loader):
 
 
 if __name__ == "__main__":
+    raw_data_loader("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Input_Supersim/PhotoNeutronDMC_InitialTest10K_jswfix.mat")
     #pre_processing()
     #run_lstm()
