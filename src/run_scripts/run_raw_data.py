@@ -26,6 +26,7 @@ num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 pin_memory = (device.type == "cuda")
 
+
 # Only run it once to preprocess the data
 def pre_processing():
     # First file is data dump, DO NOT INCLUDE IT
@@ -57,8 +58,9 @@ def pre_processing():
         # np.save("../../data/raw_events/event_number_{}.npy".format(event), row_dict[event])
         # so we'll append the event number as the first value in the array for each event number and store them all in
         # one big file
-        row_dict[event].insert(0, event)
-        matrix.append(np.array(row_dict[event]))
+        for i in range(len(row_dict[event])):
+            row_dict[event][i].append(event)
+            matrix.append(np.array(row_dict[event][i]))
     matrix = np.array(matrix)
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 

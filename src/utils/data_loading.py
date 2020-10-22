@@ -40,58 +40,6 @@ cedar_username = "fenauxlu"
 # dets = [4]
 
 
-# TODO: make sure event numbers are the right numbers and do not need adjustment like in the get_full_data function
-def get_all_events(filepaths):
-    det = [14]
-    n_samples = 2048
-    chan_list = [0, 1, 2, 3, 4, 5]
-    reindex_const = 50000
-    dfs = None
-    for idx, filepath in enumerate(filepaths):
-        try:
-            df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
-        except:
-             logging.error("Problems reading dump ", idx)
-             logging.error("\t", filepath)
-             continue
-        if dfs is None:
-            dfs = df
-        else:
-            dfs = pd.concat([dfs, df], axis=0)
-        logging.info("done concatonating df for {}".format(filepath))
-    logging.info("#######extracting rows")
-    row_dict = extract_rows(dfs, n_samples)
-    logging.info("#######done extracting rows")
-    return row_dict
-
-
-def extract_rows(df, n_samples=2048):
-    event_number = -1
-    all_rows = {}
-    current_row = []
-    for idx, row in df.iterrows():
-        if event_number != row['event number']:
-            if len(current_row) > 0:
-                if event_number not in all_rows.keys():
-                    all_rows[event_number] = current_row
-                else:
-                    all_rows[event_number].extend(current_row)
-            event_number = row['event number']
-            logging.info("event number {}".format(event_number))
-            current_row = []
-        for i in range(n_samples):
-            current_row.append(row[i])
-    if len(current_row) > 0:
-        if event_number not in all_rows.keys():
-            all_rows[event_number] = current_row
-        else:
-            all_rows[event_number].extent(current_row)
-    else:
-        logging.warning("last row to be extracted is somehow empty")
-    logging.info("done extracting rows")
-    return all_rows
-
-
 def sklearn_data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path, with_pca=0):
     """Basic data loader for any simulated data that returns numpy arrays for the data"""
     calib_paths = [[True, os.path.relpath("/home/{}/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Processed/calib_test_binary_01140301_0038.root".format(cedar_username))]]
@@ -420,40 +368,9 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
     return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
 
 
-def raw_data_loader(data_file, init_path, num_scatter_save_path, det=14):
-    """ Pre-processing must have already been done, specify the file where the raw data is located"""
-    t1 = time.time()
-    data = np.load(data_file)
-    scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
-
-    # get all the events number we have the truth value of
-    evs = list(single_scatter.keys())
-
-    targets = []
-    all_event_numbers = data[:, 0]
-    target_event_numbers = []
-    data = np.delete(data, 0, axis=1)
-    for row in range(np.shape(data)[0]):
-        ev = all_event_numbers[row]
-        # logging.info("processing event number {}".format(ev))
-        if ev not in evs:
-            data = np.delete(data, row, axis=0)
-            logging.info("event number {} was not present in the init file and got deleted".format(ev))
-            continue
-        target_event_numbers.append(ev)
-        targets.append(single_scatter[ev])
-        logging.info("event number {} found and added".format(ev))
-    if len(all_event_numbers) - len(target_event_numbers) > 0:
-        logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
-    else:
-        logging.info("all raw data events were found in the init file")
-    t2 = time.time()
-    logging.info("### time taken by program: {} ###".format(t2 - t1))
-    return data, targets, target_event_numbers
-
-
-def raw_data_loader_bis(data_file, init_path, num_scatter_save_path, det=14):
-    """ Pre-processing must have already been done, specify the file where the raw data is located"""
+def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):
+    """ Pre-processing must have already been done, specify the file where the raw data is located
+        For this data loader, we treat each pulse from each channel as a different event"""
     t1 = time.time()
     all_data = np.load(data_file)
     scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
@@ -462,9 +379,9 @@ def raw_data_loader_bis(data_file, init_path, num_scatter_save_path, det=14):
     evs = list(single_scatter.keys())
 
     targets = []
-    all_event_numbers = all_data[:, 0]
+    all_event_numbers = all_data[:, -1]
     target_event_numbers = []
-    all_data = np.delete(all_data, 0, axis=1)
+    all_data = np.delete(all_data, -1, axis=1)
     data = []
     for row in range(np.shape(all_data)[0]):
         ev = all_event_numbers[row]
@@ -476,7 +393,7 @@ def raw_data_loader_bis(data_file, init_path, num_scatter_save_path, det=14):
         target_event_numbers.append(ev)
         targets.append(single_scatter[ev])
         logging.info("event number {} found and added".format(ev))
-    if len(all_event_numbers) - len(target_event_numbers) > 0:
+    if len(np.unique(all_event_numbers)) - len(np.unique(target_event_numbers)) > 0:
         logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
     else:
         logging.info("all raw data events were found in the init file")
@@ -486,6 +403,57 @@ def raw_data_loader_bis(data_file, init_path, num_scatter_save_path, det=14):
 
 
 # HELPER FUNCTIONS
+
+def get_all_events(filepaths):
+    det = [14]
+    n_samples = 4096
+    chan_list = [0, 1, 2, 3, 4, 5]
+    dfs = None
+    for idx, filepath in enumerate(filepaths):
+        try:
+            df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
+        except:
+             logging.error("Problems reading dump ", idx)
+             logging.error("\t", filepath)
+             continue
+        if dfs is None:
+            dfs = df
+        else:
+            dfs = pd.concat([dfs, df], axis=0)
+        logging.info("done concatonating df for {}".format(filepath))
+    logging.info("#######extracting rows")
+    row_dict = extract_rows(dfs, n_samples)
+    logging.info("#######done extracting rows")
+    return row_dict
+
+
+def extract_rows(df, n_samples=2048):
+    event_number = -1
+    all_rows = {}
+    current_row = []
+    for idx, row in df.iterrows():
+        if event_number != row['event number']:
+            if len(current_row) > 0:
+                if event_number not in all_rows.keys():
+                    all_rows[event_number] = [current_row]
+                else:
+                    all_rows[event_number].append(current_row)
+            event_number = row['event number']
+            logging.info("event number {}".format(event_number))
+            current_row = []
+        for i in range(n_samples):
+            current_row.append(row[i])
+    if len(current_row) > 0:
+        if event_number not in all_rows.keys():
+            all_rows[event_number] = [current_row]
+        else:
+            all_rows[event_number].append(current_row)
+    else:
+        logging.warning("last row to be extracted is somehow empty")
+    logging.info("done extracting rows")
+    return all_rows
+
+
 def perform_pca_reduction(n_components, train_data, test_data, feature_names):
     pca = PCA(n_components=n_components)
     train_data = pca.fit_transform(train_data)
