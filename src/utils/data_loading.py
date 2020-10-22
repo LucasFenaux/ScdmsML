@@ -9,6 +9,7 @@ from sklearn.decomposition import PCA
 from .Raw_data import read_file
 import pandas as pd
 import logging
+import time
 
 cedar_username = "fenauxlu"
 #logging.basicConfig(filename='./data_loading_log.log', level=logging.DEBUG)
@@ -421,6 +422,7 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
 
 def raw_data_loader(data_file, init_path, num_scatter_save_path, det=14):
     """ Pre-processing must have already been done, specify the file where the raw data is located"""
+    t1 = time.time()
     data = np.load(data_file)
     scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
 
@@ -433,17 +435,55 @@ def raw_data_loader(data_file, init_path, num_scatter_save_path, det=14):
     data = np.delete(data, 0, axis=1)
     for row in range(np.shape(data)[0]):
         ev = all_event_numbers[row]
-        logging.info("processing event number {}".format(ev))
+        # logging.info("processing event number {}".format(ev))
         if ev not in evs:
             data = np.delete(data, row, axis=0)
+            logging.info("event number {} was not present in the init file and got deleted".format(ev))
             continue
         target_event_numbers.append(ev)
         targets.append(single_scatter[ev])
+        logging.info("event number {} found and added".format(ev))
     if len(all_event_numbers) - len(target_event_numbers) > 0:
         logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
     else:
         logging.info("all raw data events were found in the init file")
+    t2 = time.time()
+    logging.info("### time taken by program: {} ###".format(t2 - t1))
     return data, targets, target_event_numbers
+
+
+def raw_data_loader_bis(data_file, init_path, num_scatter_save_path, det=14):
+    """ Pre-processing must have already been done, specify the file where the raw data is located"""
+    t1 = time.time()
+    all_data = np.load(data_file)
+    scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
+
+    # get all the events number we have the truth value of
+    evs = list(single_scatter.keys())
+
+    targets = []
+    all_event_numbers = all_data[:, 0]
+    target_event_numbers = []
+    all_data = np.delete(all_data, 0, axis=1)
+    data = []
+    for row in range(np.shape(all_data)[0]):
+        ev = all_event_numbers[row]
+        # logging.info("processing event number {}".format(ev))
+        if ev not in evs:
+            logging.info("event number {} was not present in the init file and got deleted".format(ev))
+            continue
+        data.append(all_data[row, :])
+        target_event_numbers.append(ev)
+        targets.append(single_scatter[ev])
+        logging.info("event number {} found and added".format(ev))
+    if len(all_event_numbers) - len(target_event_numbers) > 0:
+        logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
+    else:
+        logging.info("all raw data events were found in the init file")
+    t2 = time.time()
+    logging.info("### time taken by program: {} ###".format(t2 - t1))
+    return data, targets, target_event_numbers
+
 
 # HELPER FUNCTIONS
 def perform_pca_reduction(n_components, train_data, test_data, feature_names):
