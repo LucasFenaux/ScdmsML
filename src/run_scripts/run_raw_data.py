@@ -20,11 +20,19 @@ from src.utils import get_all_events, build_confusion_matrix
 from src.utils.data_loading import torch_data_loader, raw_data_loader
 from src.models.lstm import LSTMClassifier
 from src.main_scripts import train_nn
+from src.utils.Raw_data import read_file
 
 num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 pin_memory = (device.type == "cuda")
+
+
+def test():
+    df = read_file("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0001.gz")
+    df = df.set_index(['event number'])  # , 'channel number'])#,'detector number'])")
+    print(df['channel number'].unique())
+    print(df.sample(10))
 
 
 # Only run it once to preprocess the data
