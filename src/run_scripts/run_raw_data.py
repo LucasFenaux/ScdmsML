@@ -53,23 +53,16 @@ def pre_processing():
         #filepaths.append("/home/ge0rges/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0" + last_part)
 
     logging.info("getting all events")
-    row_dict = get_all_events(filepaths)
+    matrix = get_all_events(filepaths)
     logging.info("done getting events")
     #logging.info(row_dict.keys())
-    logging.info("size of the dict {}".format(sys.getsizeof(row_dict)))
+    logging.info("size of the data matrix {}".format(sys.getsizeof(matrix)))
     #with open('raw_data_dict.pickle', 'wb') as handle:
     #    pickle.dump(row_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    matrix = []
-    for event in list(row_dict.keys()):
-        # Apparently saving each array in its own file seems to be taking too much space
-        # also computecanada doesnt like many small files
-        # np.save("../../data/raw_events/event_number_{}.npy".format(event), row_dict[event])
-        # so we'll append the event number as the first value in the array for each event number and store them all in
-        # one big file
-        for i in range(len(row_dict[event])):
-            row_dict[event][i].append(event)
-            matrix.append(np.array(row_dict[event][i]))
-    matrix = np.array(matrix)
+
+    # trace starts at index 5, event num is at 0, det is at 1, ev type is at 2, channel num is at 3 and ev cat is at 4
+    # we only care about event number
+    np.delete(matrix, [1, 2, 3, 4], axis=1)
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
 
