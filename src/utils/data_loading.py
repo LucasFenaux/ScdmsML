@@ -383,6 +383,7 @@ def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):
     target_event_numbers = []
     all_data = np.delete(all_data, -1, axis=1)
     data = []
+    print(np.shape(all_data))
     for row in range(np.shape(all_data)[0]):
         ev = all_event_numbers[row]
         # logging.info("processing event number {}".format(ev))
@@ -427,7 +428,7 @@ def get_all_events(filepaths):
     return row_dict
 
 
-def extract_rows(df, n_samples=2048):
+def extract_rows(df, n_samples=4096):
     event_number = -1
     all_rows = {}
     current_row = []
@@ -439,7 +440,7 @@ def extract_rows(df, n_samples=2048):
                 else:
                     all_rows[event_number].append(current_row)
             event_number = row['event number']
-            logging.info("event number {}".format(event_number))
+            #logging.info("event number {}".format(event_number))
             current_row = []
         for i in range(n_samples):
             current_row.append(row[i])

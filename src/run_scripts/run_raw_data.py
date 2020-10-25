@@ -17,7 +17,7 @@ import logging
 logging.basicConfig(filename='./raw_data_log.log', level=logging.DEBUG)
 
 from src.utils import get_all_events, build_confusion_matrix
-from src.utils.data_loading import torch_data_loader, raw_data_loader
+from src.utils.data_loading import torch_data_loader, raw_data_loader_1
 from src.models.lstm import LSTMClassifier
 from src.main_scripts import train_nn
 
@@ -58,7 +58,9 @@ def pre_processing():
         # np.save("../../data/raw_events/event_number_{}.npy".format(event), row_dict[event])
         # so we'll append the event number as the first value in the array for each event number and store them all in
         # one big file
-        for i in range(len(row_dict[event])):
+        number_of_channels = len(row_dict[event])
+        logging.info("number of channels for event {} is {}".format(event, number_of_channels))
+        for i in range(number_of_channels):
             row_dict[event][i].append(event)
             matrix.append(np.array(row_dict[event][i]))
     matrix = np.array(matrix)
@@ -122,6 +124,9 @@ def error_function(model, batch_loader):
 
 
 if __name__ == "__main__":
-    raw_data_loader("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
     #pre_processing()
+    data, targets, target_evs =  raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
     #run_lstm()
+    logging.info("data shape : {}".format(np.shape(data)))
+    logging.info("targets shape : {}".format(np.shape(targets)))
+    logging.info("target_evs shape : {}".format(np.shape(target_evs)))
