@@ -379,9 +379,10 @@ def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):
     evs = list(single_scatter.keys())
 
     targets = []
-    all_event_numbers = all_data[:, -1]
+    all_event_numbers = all_data[:, 0]
     target_event_numbers = []
-    all_data = np.delete(all_data, -1, axis=1)
+    all_data = np.delete(all_data, 0, axis=1)
+    assert np.shape(all_data)[1] == 4096
     data = []
     print(np.shape(all_data))
     for row in range(np.shape(all_data)[0]):
@@ -413,6 +414,7 @@ def get_all_events(filepaths):
     for idx, filepath in enumerate(filepaths):
         try:
             df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
+            df.set_index("event number")
         except:
              logging.error("Problems reading dump ", idx)
              logging.error("\t", filepath)
@@ -423,36 +425,13 @@ def get_all_events(filepaths):
             dfs = pd.concat([dfs, df], axis=0)
         logging.info("done concatonating df for {}".format(filepath))
     logging.info("#######extracting rows")
-    row_dict = extract_rows(dfs, n_samples)
+    matrix = []
+    # trace starts at index 5, event num is at 0, det is at 1, ev type is at 2, channel num is at 3 and ev cat is at 4
+    for row in dfs.itertuples(index=True):
+        matrix.append(np.array(row))
+    matrix = np.array(matrix)
     logging.info("#######done extracting rows")
-    return row_dict
-
-
-def extract_rows(df, n_samples=4096):
-    event_number = -1
-    all_rows = {}
-    current_row = []
-    for idx, row in df.iterrows():
-        if event_number != row['event number']:
-            if len(current_row) > 0:
-                if event_number not in all_rows.keys():
-                    all_rows[event_number] = [current_row]
-                else:
-                    all_rows[event_number].append(current_row)
-            event_number = row['event number']
-            #logging.info("event number {}".format(event_number))
-            current_row = []
-        for i in range(n_samples):
-            current_row.append(row[i])
-    if len(current_row) > 0:
-        if event_number not in all_rows.keys():
-            all_rows[event_number] = [current_row]
-        else:
-            all_rows[event_number].append(current_row)
-    else:
-        logging.warning("last row to be extracted is somehow empty")
-    logging.info("done extracting rows")
-    return all_rows
+    return matrix
 
 
 def perform_pca_reduction(n_components, train_data, test_data, feature_names):
