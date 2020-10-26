@@ -6,6 +6,7 @@ import os
 import torch
 from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
 from .Raw_data import read_file
 import pandas as pd
 import logging
@@ -366,6 +367,32 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
         feature_names.extend(features)
 
     return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
+
+
+def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
+    data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
+
+    train_data, test_data, train_targets, test_targets = train_test_split(data, targets) # can add target_evs in there if you want to keep track of them as well
+
+    train_data = torch.Tensor(train_data)
+    train_targets = torch.Tensor(train_targets)
+    train_targets = torch.nn.functional.one_hot(train_targets.to(torch.int64))
+
+    test_data = torch.Tensor(test_data)
+    test_targets = torch.Tensor(test_targets)
+    test_targets = torch.nn.functional.one_hot(test_targets.to(torch.int64))
+
+    train_dataset = TensorDataset(train_data, train_targets)
+    train_sampler = RandomSampler(train_dataset)
+    train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
+                              pin_memory=pin_memory)
+
+    test_dataset = TensorDataset(test_data, test_targets)
+    test_sampler = RandomSampler(test_dataset)
+    test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
+                             pin_memory=pin_memory)
+
+    return train_loader, test_loader
 
 
 def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):

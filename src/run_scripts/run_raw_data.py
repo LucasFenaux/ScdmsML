@@ -17,7 +17,7 @@ import logging
 logging.basicConfig(filename='./raw_data_log.log', level=logging.DEBUG)
 
 from src.utils import get_all_events, build_confusion_matrix
-from src.utils.data_loading import torch_data_loader, raw_data_loader_1
+from src.utils.data_loading import torch_raw_data_loader, raw_data_loader_1
 from src.models.lstm import LSTMClassifier
 from src.main_scripts import train_nn
 from src.utils.Raw_data import read_file
@@ -86,7 +86,7 @@ def run_lstm():
 
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
 
-    train_loader, test_loader = torch_raw_data_loader(det=14, batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
+    train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
 
     for _ in range(epochs):
         # for param in nn.parameters():
@@ -124,9 +124,6 @@ def error_function(model, batch_loader):
 
 
 if __name__ == "__main__":
-    pre_processing()
-    data, targets, target_evs =  raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
-    #run_lstm()
-    logging.info("data shape : {}".format(np.shape(data)))
-    logging.info("targets shape : {}".format(np.shape(targets)))
-    logging.info("target_evs shape : {}".format(np.shape(target_evs)))
+    #pre_processing()
+    #data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
+    run_lstm()
