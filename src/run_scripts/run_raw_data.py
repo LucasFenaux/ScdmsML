@@ -61,7 +61,9 @@ def pre_processing():
     
     #    pickle.dump(row_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
     # we only care about event number
-    np.delete(matrix, [1, 2, 3, 4], axis=1)
+    logging.info("matrix shape before column deletion {}".format(np.shape(matrix)))
+    matrix = np.delete(matrix, [1, 2, 3, 4], axis=1)
+    logging.info("matrix shape after deletion {}".format(np.shape(matrix)))
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
 
@@ -123,8 +125,8 @@ def error_function(model, batch_loader):
 
 if __name__ == "__main__":
     pre_processing()
-    #data, targets, target_evs =  raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
+    data, targets, target_evs =  raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
     #run_lstm()
-    #logging.info("data shape : {}".format(np.shape(data)))
-    #logging.info("targets shape : {}".format(np.shape(targets)))
-    #logging.info("target_evs shape : {}".format(np.shape(target_evs)))
+    logging.info("data shape : {}".format(np.shape(data)))
+    logging.info("targets shape : {}".format(np.shape(targets)))
+    logging.info("target_evs shape : {}".format(np.shape(target_evs)))

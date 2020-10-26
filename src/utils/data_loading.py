@@ -377,14 +377,14 @@ def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):
 
     # get all the events number we have the truth value of
     evs = list(single_scatter.keys())
-
+    logging.info("data matrix shape {}".format(np.shape(all_data)))
     targets = []
     all_event_numbers = all_data[:, 0]
     target_event_numbers = []
     all_data = np.delete(all_data, 0, axis=1)
+    logging.info("data matrix shape {}".format(np.shape(all_data)))
     assert np.shape(all_data)[1] == 4096
     data = []
-    print(np.shape(all_data))
     for row in range(np.shape(all_data)[0]):
         ev = all_event_numbers[row]
         # logging.info("processing event number {}".format(ev))
@@ -394,7 +394,7 @@ def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):
         data.append(all_data[row, :])
         target_event_numbers.append(ev)
         targets.append(single_scatter[ev])
-        logging.info("event number {} found and added".format(ev))
+        #logging.info("event number {} found and added".format(ev))
     if len(np.unique(all_event_numbers)) - len(np.unique(target_event_numbers)) > 0:
         logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
     else:
@@ -414,7 +414,7 @@ def get_all_events(filepaths):
     for idx, filepath in enumerate(filepaths):
         try:
             df = read_file(filepath, detlist=det, chanlist=chan_list, n_samples=n_samples)
-            df.set_index("event number")
+            #df.set_index("event number")
         except:
              logging.error("Problems reading dump ", idx)
              logging.error("\t", filepath)
@@ -424,10 +424,11 @@ def get_all_events(filepaths):
         else:
             dfs = pd.concat([dfs, df], axis=0)
         logging.info("done concatonating df for {}".format(filepath))
+    #logging.info("df key list {}".format(list(dfs.columns)))
     logging.info("#######extracting rows")
     matrix = []
     # trace starts at index 5, event num is at 0, det is at 1, ev type is at 2, channel num is at 3 and ev cat is at 4
-    for row in dfs.itertuples(index=True):
+    for row in dfs.itertuples(index=False):
         matrix.append(np.array(row))
     matrix = np.array(matrix)
     logging.info("#######done extracting rows")
