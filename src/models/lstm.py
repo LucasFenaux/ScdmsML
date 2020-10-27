@@ -28,4 +28,6 @@ class LSTMClassifier(nn.Module):
     def init_hidden(self, x):
         h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim)
         c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim)
+        # we return cuda because we assume you're are running this on gpu
+        # if not, please don't bother unless you want to waste your time
         return [t.cuda() for t in (h0, c0)]
