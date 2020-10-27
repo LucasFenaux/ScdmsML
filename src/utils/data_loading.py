@@ -370,10 +370,12 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
 
 
 def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
+    num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
     data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
 
     train_data, test_data, train_targets, test_targets = train_test_split(data, targets) # can add target_evs in there if you want to keep track of them as well
-
+    train_data = np.where(train_data == 0, np.array([train_data]), np.array([train_data]))
+    test_data = np.where(test_data == 0, np.array([test_data]), np.array([test_data]))
     train_data = torch.Tensor(train_data)
     train_targets = torch.Tensor(train_targets)
     train_targets = torch.nn.functional.one_hot(train_targets.to(torch.int64))

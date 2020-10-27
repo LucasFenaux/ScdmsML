@@ -69,8 +69,10 @@ def pre_processing():
 
 def run_lstm():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logging.info("device : {}".format(device))
+    assert torch.cuda.is_available()
     pin_memory = (device.type == "cuda")
-    num_workers = 4
+    num_workers = 8
     batch_size = 256
 
     criterion = torch.nn.CrossEntropyLoss()
@@ -78,9 +80,9 @@ def run_lstm():
     epochs = 20
     learning_rate = 0.1
 
-    input_size = 0
-    hidden_size = 0
-    num_layers = 0
+    input_size = 1
+    hidden_size = 1
+    num_layers = 2
 
     nn = LSTMClassifier(input_size, hidden_size, num_layers).to(device)
 
@@ -88,19 +90,20 @@ def run_lstm():
 
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
 
-    for _ in range(epochs):
+    for i in range(epochs):
         # for param in nn.parameters():
         #     print(param)
+        logging.info("epoch {}".format(i))
         loss = train_nn(train_loader, nn, criterion, optimizer, False, device)
         err = error_function(nn, test_loader)
-        print("Err: ", err)
-        print("Loss: ", loss)
+        logging.info("Err: {}".format(err))
+        logging.info("Loss: {}".format(loss))
 
     # test the model
     loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
     err = error_function(nn, test_loader)
-    print("Final Torch Loss: ", loss)
-    print("Final Torch Err: ", err)
+    logging.info("Final Torch Loss: {}".format(loss))
+    logging.info("Final Torch Err: {}".format(err))
 
 
 def error_function(model, batch_loader):
