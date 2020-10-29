@@ -374,8 +374,16 @@ def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
 
     train_data, test_data, train_targets, test_targets = train_test_split(data, targets) # can add target_evs in there if you want to keep track of them as well
-    train_data = np.where(train_data == 0, np.array([train_data]), np.array([train_data]))
-    test_data = np.where(test_data == 0, np.array([test_data]), np.array([test_data]))
+    # train_data = np.where(train_data == 0, np.array([train_data]), np.array([train_data]))
+    # test_data = np.where(test_data == 0, np.array([test_data]), np.array([test_data]))
+    for i in range(np.shape(train_data)[0]):
+        for j in range(np.shape(train_data)[1]):
+            train_data[i, j] = np.array([train_data[i, j]])
+
+    for i in range(np.shape(test_data)[0]):
+        for j in range(np.shape(test_data)[1]):
+            test_data[i, j] = np.array([test_data[i, j]])
+            
     train_data = torch.Tensor(train_data)
     train_targets = torch.Tensor(train_targets)
     train_targets = torch.nn.functional.one_hot(train_targets.to(torch.int64))
@@ -409,8 +417,10 @@ def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):
     logging.info("data matrix shape {}".format(np.shape(all_data)))
     targets = []
     all_event_numbers = all_data[:, 0]
+    all_channel_numbers = all_data[:, 1]
     target_event_numbers = []
-    all_data = np.delete(all_data, 0, axis=1)
+    all_data = np.delete(all_data, 0, axis=1)  # remove ev
+    all_data = np.delete(all_data, 0, axis=1)  # remove channel num
     logging.info("data matrix shape {}".format(np.shape(all_data)))
     assert np.shape(all_data)[1] == 4096
     data = []
@@ -438,7 +448,7 @@ def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):
 def get_all_events(filepaths):
     det = [14]
     n_samples = 4096
-    chan_list = [0, 1, 2, 3, 4, 5]
+    chan_list = (2, 3, 4, 5, 8, 9, 10, 11) # channels 0,1,6 and 7 are the charge channels
     dfs = None
     for idx, filepath in enumerate(filepaths):
         try:

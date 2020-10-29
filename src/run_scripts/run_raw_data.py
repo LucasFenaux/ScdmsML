@@ -60,9 +60,9 @@ def pre_processing():
     #with open('raw_data_dict.pickle', 'wb') as handle:
     
     #    pickle.dump(row_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    # we only care about event number
+    # we only care about event number and channel
     logging.info("matrix shape before column deletion {}".format(np.shape(matrix)))
-    matrix = np.delete(matrix, [1, 2, 3, 4], axis=1)
+    matrix = np.delete(matrix, [1, 2, 4], axis=1)
     logging.info("matrix shape after deletion {}".format(np.shape(matrix)))
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
