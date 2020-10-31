@@ -39,7 +39,7 @@ def test():
 def pre_processing():
     # First file is data dump, DO NOT INCLUDE IT
     filepaths = []
-    for i in range(2, 977):
+    for i in range(2, 25): #977):
         last_part = ""
         if i >= 100:
             last_part += str(i)

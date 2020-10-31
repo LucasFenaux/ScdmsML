@@ -376,22 +376,39 @@ def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     train_data, test_data, train_targets, test_targets = train_test_split(data, targets) # can add target_evs in there if you want to keep track of them as well
     # train_data = np.where(train_data == 0, np.array([train_data]), np.array([train_data]))
     # test_data = np.where(test_data == 0, np.array([test_data]), np.array([test_data]))
+    train_data_3D = []
     for i in range(np.shape(train_data)[0]):
+        row = []
         for j in range(np.shape(train_data)[1]):
-            train_data[i, j] = np.array([train_data[i, j]])
+            #train_data[i][j] = np.array([train_data[i][j], 0])
+            row.append(np.array([train_data[i][j]]))
+        row = np.array(row)
+        train_data_3D.append(row)
+    train_data = np.array(train_data_3D)
+    del train_data_3D
 
+    test_data_3D = []
     for i in range(np.shape(test_data)[0]):
+        row = []
         for j in range(np.shape(test_data)[1]):
-            test_data[i, j] = np.array([test_data[i, j]])
-            
+            #test_data[i][j] = np.array([test_data[i][j], 0])
+            row.append(np.array([test_data[i][j]]))
+        row = np.array(row)
+        test_data_3D.append(row)
+    test_data = np.array(test_data_3D)
+    del test_data_3D
+
+    logging.info("train data shape {}".format(np.shape(train_data)))
+    logging.info("test data shape {}".format(np.shape(test_data)))
     train_data = torch.Tensor(train_data)
-    train_targets = torch.Tensor(train_targets)
-    train_targets = torch.nn.functional.one_hot(train_targets.to(torch.int64))
+    train_targets = torch.LongTensor(train_targets)
+    train_targets = torch.nn.functional.one_hot(train_targets)
 
     test_data = torch.Tensor(test_data)
-    test_targets = torch.Tensor(test_targets)
-    test_targets = torch.nn.functional.one_hot(test_targets.to(torch.int64))
-
+    test_targets = torch.LongTensor(test_targets)
+    test_targets = torch.nn.functional.one_hot(test_targets)
+    
+    logging.info("{}, {}".format(type(train_targets), type(test_targets)))
     train_dataset = TensorDataset(train_data, train_targets)
     train_sampler = RandomSampler(train_dataset)
     train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
