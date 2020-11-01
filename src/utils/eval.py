@@ -14,13 +14,12 @@ def build_confusion_matrix(model, dataloader, number_of_classes, cls, device):
     for i, (inputs, targets) in enumerate(dataloader):
         inputs = inputs.to(device)
         targets = targets.to(device)
-
         outputs = model(inputs)
 
         # Go from probabilities to classification
         _, indices = torch.max(outputs, 1)
         binary_outputs = torch.nn.functional.one_hot(indices, num_classes=number_of_classes)
-        binary_targets = targets
+        binary_targets = torch.nn.functional.one_hot(targets, number_of_classes=number_of_classes)
 
         # Create the column for all untrained cls if necessary
         if len(untrained_cls) > 0:
