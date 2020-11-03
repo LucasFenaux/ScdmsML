@@ -39,7 +39,7 @@ def test():
 def pre_processing():
     # First file is data dump, DO NOT INCLUDE IT
     filepaths = []
-    for i in range(2, 25): #977):
+    for i in range(2, 977):
         last_part = ""
         if i >= 100:
             last_part += str(i)
@@ -66,6 +66,19 @@ def pre_processing():
     logging.info("matrix shape after deletion {}".format(np.shape(matrix)))
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
+def pre_processing_part2():
+    data = np.load("../../data/raw_events/pre_processed_data.npy")
+    data_3D = []
+    for i in range(np.shape(data)[0]):
+        row = []
+        for j in range(np.shape(data)[1]):
+            #train_data[i][j] = np.array([train_data[i][j], 0])
+            row.append(np.array([data[i][j]]))
+        row = np.array(row)
+        data_3D.append(row)
+    data = np.array(data_3D)
+    np.save("../../data/raw_events/pre_processed_data_3D_1_attribute.npy", data)
+
 
 def run_lstm():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -77,12 +90,12 @@ def run_lstm():
 
     criterion = torch.nn.CrossEntropyLoss()
 
-    epochs = 20
-    learning_rate = 0.1
+    epochs = 2000
+    learning_rate = 0.01
 
     input_size = 1
-    hidden_size = 1
-    num_layers = 2
+    hidden_size = 50
+    num_layers = 3
 
     nn = LSTMClassifier(input_size, hidden_size, num_layers).to(device)
 
@@ -127,6 +140,6 @@ def error_function(model, batch_loader):
 
 
 if __name__ == "__main__":
-    #pre_processing()
+    pre_processing()
     #data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
     run_lstm()

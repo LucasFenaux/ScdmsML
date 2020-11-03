@@ -371,32 +371,32 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
 
 def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
-    data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
+    data, targets, target_evs = raw_data_loader_2("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data_3D_1_attribute.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
 
     train_data, test_data, train_targets, test_targets = train_test_split(data, targets) # can add target_evs in there if you want to keep track of them as well
     # train_data = np.where(train_data == 0, np.array([train_data]), np.array([train_data]))
     # test_data = np.where(test_data == 0, np.array([test_data]), np.array([test_data]))
-    train_data_3D = []
-    for i in range(np.shape(train_data)[0]):
-        row = []
-        for j in range(np.shape(train_data)[1]):
-            #train_data[i][j] = np.array([train_data[i][j], 0])
-            row.append(np.array([train_data[i][j]]))
-        row = np.array(row)
-        train_data_3D.append(row)
-    train_data = np.array(train_data_3D)
-    del train_data_3D
+    #train_data_3D = []
+    #for i in range(np.shape(train_data)[0]):
+    #    row = []
+    #    for j in range(np.shape(train_data)[1]):
+    #        #train_data[i][j] = np.array([train_data[i][j], 0])
+    #        row.append(np.array([train_data[i][j]]))
+    #    row = np.array(row)
+    #    train_data_3D.append(row)
+    #train_data = np.array(train_data_3D)
+    #del train_data_3D
 
-    test_data_3D = []
-    for i in range(np.shape(test_data)[0]):
-        row = []
-        for j in range(np.shape(test_data)[1]):
+    #test_data_3D = []
+    #for i in range(np.shape(test_data)[0]):
+    #    row = []
+    #    for j in range(np.shape(test_data)[1]):
             #test_data[i][j] = np.array([test_data[i][j], 0])
-            row.append(np.array([test_data[i][j]]))
-        row = np.array(row)
-        test_data_3D.append(row)
-    test_data = np.array(test_data_3D)
-    del test_data_3D
+    #        row.append(np.array([test_data[i][j]]))
+    #    row = np.array(row)
+    #    test_data_3D.append(row)
+    #test_data = np.array(test_data_3D)
+    #del test_data_3D
 
     logging.info("train data shape {}".format(np.shape(train_data)))
     logging.info("test data shape {}".format(np.shape(test_data)))
