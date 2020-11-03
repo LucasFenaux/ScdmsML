@@ -66,6 +66,7 @@ def pre_processing():
     logging.info("matrix shape after deletion {}".format(np.shape(matrix)))
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
+
 def pre_processing_part2():
     data = np.load("../../data/raw_events/pre_processed_data.npy")
     data_3D = []

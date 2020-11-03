@@ -374,29 +374,6 @@ def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     data, targets, target_evs = raw_data_loader_2("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data_3D_1_attribute.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
 
     train_data, test_data, train_targets, test_targets = train_test_split(data, targets) # can add target_evs in there if you want to keep track of them as well
-    # train_data = np.where(train_data == 0, np.array([train_data]), np.array([train_data]))
-    # test_data = np.where(test_data == 0, np.array([test_data]), np.array([test_data]))
-    #train_data_3D = []
-    #for i in range(np.shape(train_data)[0]):
-    #    row = []
-    #    for j in range(np.shape(train_data)[1]):
-    #        #train_data[i][j] = np.array([train_data[i][j], 0])
-    #        row.append(np.array([train_data[i][j]]))
-    #    row = np.array(row)
-    #    train_data_3D.append(row)
-    #train_data = np.array(train_data_3D)
-    #del train_data_3D
-
-    #test_data_3D = []
-    #for i in range(np.shape(test_data)[0]):
-    #    row = []
-    #    for j in range(np.shape(test_data)[1]):
-            #test_data[i][j] = np.array([test_data[i][j], 0])
-    #        row.append(np.array([test_data[i][j]]))
-    #    row = np.array(row)
-    #    test_data_3D.append(row)
-    #test_data = np.array(test_data_3D)
-    #del test_data_3D
 
     logging.info("train data shape {}".format(np.shape(train_data)))
     logging.info("test data shape {}".format(np.shape(test_data)))
@@ -460,8 +437,43 @@ def raw_data_loader_1(data_file, init_path, num_scatter_save_path, det=14):
     return data, targets, target_event_numbers
 
 
-# HELPER FUNCTIONS
+def raw_data_loader_2(data_file, init_path, num_scatter_save_path, det=14):
+    t1 = time.time()
+    all_data = np.load(data_file)
+    scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
 
+    # get all the events number we have the truth value of
+    evs = list(single_scatter.keys())
+    logging.info("data matrix shape {}".format(np.shape(all_data)))
+    targets = []
+    all_event_numbers = all_data[:, 0, 0]
+    all_channel_numbers = all_data[:, 1, 0]
+    target_event_numbers = []
+    all_data = np.delete(all_data, 0, axis=1)  # remove ev
+    all_data = np.delete(all_data, 0, axis=1)  # remove channel num
+    logging.info("data matrix shape {}".format(np.shape(all_data)))
+    assert np.shape(all_data)[1] == 4096
+    data = []
+    for row in range(np.shape(all_data)[0]):
+        ev = all_event_numbers[row]
+        # logging.info("processing event number {}".format(ev))
+        if ev not in evs:
+            logging.info("event number {} was not present in the init file and got deleted".format(ev))
+            continue
+        data.append(all_data[row, :])
+        target_event_numbers.append(ev)
+        targets.append(single_scatter[ev])
+        #logging.info("event number {} found and added".format(ev))
+    if len(np.unique(all_event_numbers)) - len(np.unique(target_event_numbers)) > 0:
+        logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
+    else:
+        logging.info("all raw data events were found in the init file")
+    t2 = time.time()
+    logging.info("### time taken by program: {} ###".format(t2 - t1))
+    return data, targets, target_event_numbers
+
+
+# HELPER FUNCTIONS
 def get_all_events(filepaths):
     det = [14]
     n_samples = 4096
