@@ -86,16 +86,16 @@ def run_lstm():
     logging.info("device : {}".format(device))
     assert torch.cuda.is_available()
     pin_memory = (device.type == "cuda")
-    num_workers = 8
-    batch_size = 256
+    num_workers = 16
+    batch_size = 2048
 
     criterion = torch.nn.CrossEntropyLoss()
 
-    epochs = 2000
-    learning_rate = 0.01
+    epochs = 1000
+    learning_rate = 1
 
     input_size = 1
-    hidden_size = 50
+    hidden_size = 20
     num_layers = 3
 
     nn = LSTMClassifier(input_size, hidden_size, num_layers).to(device)
@@ -110,7 +110,7 @@ def run_lstm():
         logging.info("epoch {}".format(i))
         loss = train_nn(train_loader, nn, criterion, optimizer, False, device)
         err = error_function(nn, test_loader)
-        logging.info("Err: {}".format(err))
+        logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
 
     # test the model
@@ -141,6 +141,7 @@ def error_function(model, batch_loader):
 
 
 if __name__ == "__main__":
-    pre_processing()
+    #pre_processing()
+    #pre_processing_part2()
     #data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
     run_lstm()
