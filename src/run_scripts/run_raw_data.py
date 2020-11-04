@@ -21,6 +21,7 @@ from src.utils.data_loading import torch_raw_data_loader, raw_data_loader_1
 from src.models.lstm import LSTMClassifier
 from src.main_scripts import train_nn
 from src.utils.Raw_data import read_file
+from multiprocessing import cpu_count
 
 num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 
@@ -86,6 +87,8 @@ def run_lstm():
     logging.info("device : {}".format(device))
     assert torch.cuda.is_available()
     pin_memory = (device.type == "cuda")
+    num_cpus = cpu_count()
+    logging.info("Number of CPUs: {}".format(num_cpus))
     num_workers = 16
     batch_size = 2048
 
