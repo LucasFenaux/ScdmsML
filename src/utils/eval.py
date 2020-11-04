@@ -1,5 +1,7 @@
 import torch
 from sklearn.metrics import confusion_matrix
+import numpy as np
+import logging
 
 
 def build_confusion_matrix(model, dataloader, number_of_classes, cls, device):
@@ -57,3 +59,20 @@ def compute_accuracy(predictions, targets):
     accuracy = float(sum(accuracy_array))/float(len(accuracy_array))
 
     return accuracy
+
+
+def measure_confidence(probabilities, predictions, targets):
+    """" Computes the overall confidence of the network, the confidence in its correct choices and
+    the confidence in its incorrect choices"""
+    # First overall confidence
+    overall_confidence = np.average(np.abs((targets - probabilities)))
+
+    # Positive confidence
+    indices = np.where(predictions == targets)
+    positive_confidence = np.average(np.abs((targets[indices] - probabilities[indices])))
+
+    # Negative confidence
+    indices = np.where(predictions != targets)
+    negative_confidence = np.average(np.abs((targets[indices] - probabilities[indices])))
+
+    return overall_confidence, positive_confidence, negative_confidence
