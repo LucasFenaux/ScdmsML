@@ -40,7 +40,7 @@ def test():
 def pre_processing():
     # First file is data dump, DO NOT INCLUDE IT
     filepaths = []
-    for i in range(2, 977):
+    for i in range(2, 20):#977):
         last_part = ""
         if i >= 100:
             last_part += str(i)
@@ -194,7 +194,7 @@ def compute_metrics(model, testloader):
 
 
 if __name__ == "__main__":
-    #pre_processing()
-    #pre_processing_part2()
+    pre_processing()
+    pre_processing_part2()
     #data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
     run_lstm()

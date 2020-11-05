@@ -383,7 +383,7 @@ def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
 
     test_data = torch.Tensor(test_data)
     test_targets = torch.Tensor(test_targets).to(torch.int64)
-    #test_targets = torch.nn.functional.one_hot(test_targets)
+   # test_targets = torch.nn.functional.one_hot(test_targets)
     
     logging.info("{}, {}".format(type(train_targets), type(test_targets)))
     train_dataset = TensorDataset(train_data, train_targets)
