@@ -87,8 +87,8 @@ def run_lstm():
     logging.info("device : {}".format(device))
     assert torch.cuda.is_available()
     pin_memory = (device.type == "cuda")
-    num_cpus = cpu_count()
-    logging.info("Number of CPUs: {}".format(num_cpus))
+    # num_cpus = cpu_count()
+    # logging.info("Number of CPUs: {}".format(num_cpus))
     num_workers = 16
     batch_size = 2048
 

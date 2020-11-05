@@ -477,7 +477,7 @@ def raw_data_loader_2(data_file, init_path, num_scatter_save_path, det=14):
 def get_all_events(filepaths):
     det = [14]
     n_samples = 4096
-    chan_list = (2, 3, 4, 5, 8, 9, 10, 11) # channels 0,1,6 and 7 are the charge channels
+    chan_list = (2, 3, 4, 5, 8, 9, 10, 11)  # channels 0,1,6 and 7 are the charge channels
     dfs = None
     for idx, filepath in enumerate(filepaths):
         try:
