@@ -16,7 +16,7 @@ import pickle
 import logging
 logging.basicConfig(filename='./raw_data_log.log', level=logging.DEBUG)
 
-from src.utils import get_all_events, build_confusion_matrix, compute_accuracy, measure_confidence
+from src.utils import get_all_events, build_confusion_matrix, compute_metrics
 from src.utils.data_loading import torch_raw_data_loader, raw_data_loader_1
 from src.models.lstm import LSTMClassifier
 from src.main_scripts import train_nn
@@ -27,13 +27,6 @@ num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 pin_memory = (device.type == "cuda")
-
-
-def test():
-    df = read_file("/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_V1-5_PhotoneutronSb/Raw/libinput_sb-70V_F0001.gz")
-    df = df.set_index(['event number'])  # , 'channel number'])#,'detector number'])")
-    print(df['channel number'].unique())
-    print(df.sample(10))
 
 
 # Only run it once to preprocess the data
@@ -115,82 +108,14 @@ def run_lstm():
         # err = error_function(nn, test_loader)
         # logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
-        compute_metrics(nn, test_loader)
+        compute_metrics(nn, test_loader, device)
 
     # test the model
     loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
     # err = error_function(nn, test_loader)
     logging.info("Final Torch Loss: {}".format(loss))
-    compute_metrics(nn, test_loader)
+    compute_metrics(nn, test_loader, device)
     # logging.info("Final Torch Err: {}".format(err))
-
-
-# def error_function(model, batch_loader):
-#     """
-#     Calculates a metric to judge model. Must return a float.
-#     Metric is experiment dependent could be AUROC, Accuracy, Error....
-#
-#     Metric must be "higher is better" (eg. accuracy)
-#
-#     Do not modify params. Abstract method for all experiments.
-#     """
-#
-#     confusion_matrix = build_confusion_matrix(model, batch_loader, 2, range(2), device)
-#     confusion_matrix = confusion_matrix.to(torch.device("cpu"))
-#     # print(np.round(confusion_matrix.numpy()))
-#
-#     num_samples = sum(confusion_matrix.sum(1))
-#     correctly_classified = sum(confusion_matrix.diag())
-#
-#     return correctly_classified / num_samples
-
-
-def compute_metrics(model, testloader):
-    """
-    Compute multiple metrics based on the given model and the test loader.
-
-    :param model: given model
-    :param testloader:  test loader
-    :return: nothing
-    """
-
-    # First get the model's predictions for the test data
-    predictions = None
-    targets = None
-    probabilities = None
-
-    for i, (inputs, t) in enumerate(testloader):
-        inputs = inputs.to(device)
-        t = t.to(device)
-        outputs = model(inputs)
-
-        # Go from probabilities to classification
-        preds = (outputs + 0.5).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
-
-        if predictions is None:
-            predictions = preds
-            targets = t
-            probabilities = outputs
-        else:
-            predictions = torch.cat([predictions, preds])
-            targets = torch.cat([targets, t])
-            probabilities = torch.cat([probabilities, outputs])
-
-    predictions = predictions.numpy()
-    targets = targets.numpy()
-    probabilities = probabilities.numpy()
-
-    # We first compute the accuracy of the network
-    accuracy = compute_accuracy(predictions, targets)
-    logging.info("Accuracy: {}".format(accuracy))
-
-    # Then we look at the confidence of the network in its different choices
-    overall_confidence, positive_confidence, negative_confidence = measure_confidence(probabilities, predictions, targets)
-    logging.info("Overall confidence: {}".format(overall_confidence))
-    logging.info("Positive confidence: {}".format(positive_confidence))
-    logging.info("Negative confidence: {}".format(negative_confidence))
-
-    return
 
 
 if __name__ == "__main__":
