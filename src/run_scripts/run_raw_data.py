@@ -89,7 +89,7 @@ def run_lstm():
     pin_memory = (device.type == "cuda")
     # num_cpus = cpu_count()
     # logging.info("Number of CPUs: {}".format(num_cpus))
-    num_workers = 16
+    num_workers = 8
     batch_size = 1024
 
     criterion = torch.nn.CrossEntropyLoss()
