@@ -101,7 +101,7 @@ def run_lstm():
     hidden_size = 20
     num_layers = 3
 
-    nn = LSTMClassifier(input_size, hidden_size, num_layers).to(device)
+    nn = LSTMClassifier(input_size, hidden_size, num_layers, output_dim=1).to(device)
 
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
 

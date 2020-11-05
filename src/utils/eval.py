@@ -48,6 +48,52 @@ def build_confusion_matrix(model, dataloader, number_of_classes, cls, device):
     return torch.Tensor(confusion_matrix(all_binary_targets, all_binary_outputs))
 
 
+def compute_metrics(model, testloader, device):
+    """
+    Compute multiple metrics based on the given model and the test loader.
+
+    :param model: given model
+    :param testloader:  test loader
+    :return: nothing
+    """
+
+    # First get the model's predictions for the test data
+    predictions = None
+    targets = None
+    probabilities = None
+
+    for i, (inputs, t) in enumerate(testloader):
+        inputs = inputs.to(device)
+        t = t.to(device)
+        outputs = model(inputs)
+
+        # Go from probabilities to classification
+        preds = (outputs + 0.5).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
+
+        if predictions is None:
+            predictions = preds
+            targets = t
+            probabilities = outputs
+        else:
+            predictions = torch.cat([predictions, preds])
+            targets = torch.cat([targets, t])
+            probabilities = torch.cat([probabilities, outputs])
+
+    predictions = predictions.numpy()
+    targets = targets.numpy()
+    probabilities = probabilities.numpy()
+
+    # We first compute the accuracy of the network
+    accuracy = compute_accuracy(predictions, targets)
+    # logging.info("Accuracy: {}".format(accuracy))
+
+    # Then we look at the confidence of the network in its different choices
+    overall_confidence, positive_confidence, negative_confidence = measure_confidence(probabilities, predictions, targets)
+    logging.info("Overall confidence: {}".format(overall_confidence))
+    logging.info("Positive confidence: {}".format(positive_confidence))
+    logging.info("Negative confidence: {}".format(negative_confidence))
+    return accuracy
+
 def compute_accuracy(predictions, targets):
     """Computes an accuracy based on the given predictions and targets"""
     assert len(predictions) == len(targets)

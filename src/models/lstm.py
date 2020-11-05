@@ -5,6 +5,7 @@ import torch
 
 # Modified source: https://www.kaggle.com/purplejester/a-simple-lstm-based-time-series-classifier
 
+
 class LSTMClassifier(nn.Module):
 
     def _forward_unimplemented(self, *input: Any) -> None:
@@ -23,6 +24,7 @@ class LSTMClassifier(nn.Module):
         h0, c0 = self.init_hidden(x)
         out, (hn, cn) = self.rnn(x, (h0, c0))
         out = self.fc(out[:, -1, :])
+        print(out)
         out = nn.Sigmoid(out)
         return out
 
