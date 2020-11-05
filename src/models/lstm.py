@@ -17,6 +17,7 @@ class LSTMClassifier(nn.Module):
         self.layer_dim = layer_dim
         self.rnn = nn.LSTM(input_dim, hidden_dim, layer_dim, batch_first=True)
         self.fc = nn.Linear(hidden_dim, output_dim)
+        self.sigmoid = nn.Sigmoid()
         self.batch_size = None
         self.hidden = None
 
@@ -25,7 +26,7 @@ class LSTMClassifier(nn.Module):
         out, (hn, cn) = self.rnn(x, (h0, c0))
         out = self.fc(out[:, -1, :])
         print(out)
-        out = nn.Sigmoid(out)
+        out = self.sigmoid(out)
         return out
 
     def init_hidden(self, x):
