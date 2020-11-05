@@ -64,16 +64,16 @@ def compute_metrics(model, testloader, device):
 
     for i, (inputs, t) in enumerate(testloader):
         inputs = inputs.to(device)
-        t = t.to(device)
+        # t = t.to(device)
         outputs = model(inputs)
 
         # Go from probabilities to classification
-        preds = (outputs + 0.5).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
-
+        preds = (outputs + 0.5).to(torch.device("cpu")).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
+        t = t.to(torch.device("cpu"))
         if predictions is None:
             predictions = preds
             targets = t
-            probabilities = outputs
+            probabilities = outputs.to(torch.device("cpu"))
         else:
             predictions = torch.cat([predictions, preds])
             targets = torch.cat([targets, t])
@@ -93,6 +93,7 @@ def compute_metrics(model, testloader, device):
     logging.info("Positive confidence: {}".format(positive_confidence))
     logging.info("Negative confidence: {}".format(negative_confidence))
     return accuracy
+
 
 def compute_accuracy(predictions, targets):
     """Computes an accuracy based on the given predictions and targets"""
