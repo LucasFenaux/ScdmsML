@@ -380,12 +380,13 @@ def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     train_data = torch.Tensor(train_data)
     train_targets = torch.Tensor(train_targets).to(torch.int64)
     #train_targets = torch.nn.functional.one_hot(train_targets)
-
+    assert torch.max(train_targets) <=1 and torch.min(train_targets) >= 0
     test_data = torch.Tensor(test_data)
     test_targets = torch.Tensor(test_targets).to(torch.int64)
+    assert torch.max(test_targets) <=1 and torch.min(test_targets) >=0
    # test_targets = torch.nn.functional.one_hot(test_targets)
     
-    logging.info("{}, {}".format(type(train_targets), type(test_targets)))
+    #logging.info("{}, {}".format(type(train_targets), type(test_targets)))
     train_dataset = TensorDataset(train_data, train_targets)
     train_sampler = RandomSampler(train_dataset)
     train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,

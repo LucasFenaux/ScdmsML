@@ -119,7 +119,7 @@ def run_lstm():
 
 
 if __name__ == "__main__":
-    pre_processing()
-    pre_processing_part2()
+    #pre_processing()
+    #pre_processing_part2()
     #data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
     run_lstm()
