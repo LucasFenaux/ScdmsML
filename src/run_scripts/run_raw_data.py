@@ -96,7 +96,7 @@ def run_lstm():
 
     nn = LSTMClassifier(input_size, hidden_size, num_layers, output_dim=1).to(device)
 
-    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(nn.parameters(), lr=learning_rate)
 
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
 
