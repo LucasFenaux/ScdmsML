@@ -17,7 +17,7 @@ def train_nn(batch_loader: DataLoader, model: torch.nn.Module, criterion, optimi
     # Progress bar stuff
     #batch_time = AverageMeter()
     #data_time = AverageMeter()
-    #losses = AverageMeter()
+    losses = AverageMeter()
     #end = time.time()
     for batch_idx, (inputs, target) in enumerate(batch_loader):
         # Measure data loading time
@@ -31,7 +31,7 @@ def train_nn(batch_loader: DataLoader, model: torch.nn.Module, criterion, optimi
         total_loss = criterion(output, target)
 
         # Record loss
-        #losses.update(total_loss.item(), inputs.size(0))
+        losses.update(total_loss.item(), inputs.size(0))
 
         if not testing:
             # Compute gradient and do SGD step

@@ -86,6 +86,7 @@ def run_lstm():
     batch_size = 1024
 
     criterion = torch.nn.CrossEntropyLoss()
+    #criterion = torch.nn.BCELoss()
 
     epochs = 1000
     learning_rate = 0.0005
@@ -94,7 +95,7 @@ def run_lstm():
     hidden_size = 20
     num_layers = 3
 
-    nn = LSTMClassifier(input_size, hidden_size, num_layers, output_dim=1).to(device)
+    nn = LSTMClassifier(input_size, hidden_size, num_layers, output_dim=2).to(device)
 
     optimizer = optim.SGD(nn.parameters(), lr=learning_rate)
 
@@ -108,13 +109,13 @@ def run_lstm():
         # err = error_function(nn, test_loader)
         # logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
-        compute_metrics(nn, test_loader, device)
+        #compute_metrics(nn, test_loader, device)
 
     # test the model
     loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
     # err = error_function(nn, test_loader)
     logging.info("Final Torch Loss: {}".format(loss))
-    compute_metrics(nn, test_loader, device)
+    #compute_metrics(nn, test_loader, device)
     # logging.info("Final Torch Err: {}".format(err))
 
 

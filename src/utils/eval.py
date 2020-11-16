@@ -77,11 +77,15 @@ def compute_metrics(model, testloader, device):
         else:
             predictions = torch.cat([predictions, preds])
             targets = torch.cat([targets, t])
-            probabilities = torch.cat([probabilities, outputs])
+            probabilities = torch.cat([probabilities, outputs.to(torch.device("cpu"))])
 
-    predictions = predictions.numpy()
-    targets = targets.numpy()
-    probabilities = probabilities.numpy()
+    predictions = predictions.detach().numpy()
+    targets = targets.detach().numpy()
+    probabilities = probabilities.detach().numpy()
+
+    logging.info("predictions : {}".format(np.shape(predictions)))
+    logging.info("targets : {}".format(np.shape(targets)))
+    logging.info("probabilities : {}".format(np.shape(probabilities)))
 
     # We first compute the accuracy of the network
     accuracy = compute_accuracy(predictions, targets)
