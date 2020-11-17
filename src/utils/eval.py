@@ -65,15 +65,21 @@ def compute_metrics(model, testloader, device):
     for i, (inputs, t) in enumerate(testloader):
         inputs = inputs.to(device)
         # t = t.to(device)
-        outputs = model(inputs)
+        outputs = model(inputs).to(torch.device("cpu"))
 
-        # Go from probabilities to classification
-        preds = (outputs + 0.5).to(torch.device("cpu")).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
+        # If both targets and outputs are 1D Go from probabilities to classification
+        #preds = (outputs + 0.5).to(torch.device("cpu")).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
+
+        # Else
+        _, preds = torch.max(outputs, 1)
+
+        preds = torch.nn.functional.one_hot(preds, num_classes=2)
+        t = torch.nn.functional.one_hot(t, num_classes=2)
         t = t.to(torch.device("cpu"))
         if predictions is None:
             predictions = preds
             targets = t
-            probabilities = outputs.to(torch.device("cpu"))
+            probabilities = outputs
         else:
             predictions = torch.cat([predictions, preds])
             targets = torch.cat([targets, t])
@@ -104,8 +110,16 @@ def compute_accuracy(predictions, targets):
     assert len(predictions) == len(targets)
 
     accuracy_array = []
-    for (idx, pred), (_, t) in zip(enumerate(predictions), enumerate(targets)):
-        accuracy_array.append(1) if pred == t else accuracy_array.append(0)
+
+    if len(np.shape(targets)) == 1:
+
+        for (idx, pred), (_, t) in zip(enumerate(predictions), enumerate(targets)):
+            accuracy_array.append(1) if pred == t else accuracy_array.append(0)
+
+    else:
+
+        for (idx, pred), (_, t) in zip(enumerate(predictions), enumerate(targets)):
+            accuracy_array.append(1) if np.argmax(pred) == np.argmax(t) else accuracy_array.append(0)
 
     accuracy = float(sum(accuracy_array))/float(len(accuracy_array))
 
@@ -125,5 +139,5 @@ def measure_confidence(probabilities, predictions, targets):
     # Negative confidence
     indices = np.where(predictions != targets)
     negative_confidence = np.average(np.abs((targets[indices] - probabilities[indices])))
-
+        
     return overall_confidence, positive_confidence, negative_confidence

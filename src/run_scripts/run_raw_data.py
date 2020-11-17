@@ -109,13 +109,13 @@ def run_lstm():
         # err = error_function(nn, test_loader)
         # logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
-        #compute_metrics(nn, test_loader, device)
+        compute_metrics(nn, test_loader, device)
 
     # test the model
     loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
     # err = error_function(nn, test_loader)
     logging.info("Final Torch Loss: {}".format(loss))
-    #compute_metrics(nn, test_loader, device)
+    compute_metrics(nn, test_loader, device)
     # logging.info("Final Torch Err: {}".format(err))
 
 
