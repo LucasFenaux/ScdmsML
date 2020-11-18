@@ -74,6 +74,9 @@ def compute_metrics(model, testloader, device):
 
         # If edelting the variables doesnt work, then try detaching before
         # doing the computations
+        inputs = inputs.detach().to(torch.device("cpu"))
+        t = t.detach().to(torch.device("cpu"))
+        outputs = outputs.detach().to(torch.device("cpu"))
         _, preds = torch.max(outputs, 1)
 
         preds = torch.nn.functional.one_hot(preds, num_classes=2)
@@ -91,6 +94,7 @@ def compute_metrics(model, testloader, device):
         del preds
         del outputs
         del inputs
+        torch.cuda.empty_cache()
 
     predictions = predictions.to(torch.device("cpu")).detach().numpy()
     targets = targets.to(torch.device("cpu")).detach().numpy()

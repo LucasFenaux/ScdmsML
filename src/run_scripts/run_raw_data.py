@@ -83,7 +83,7 @@ def run_lstm():
     # num_cpus = cpu_count()
     # logging.info("Number of CPUs: {}".format(num_cpus))
     num_workers = 8
-    batch_size = 1024
+    batch_size = 2048
 
     criterion = torch.nn.CrossEntropyLoss()
     #criterion = torch.nn.BCELoss()
