@@ -33,7 +33,7 @@ pin_memory = (device.type == "cuda")
 def pre_processing():
     # First file is data dump, DO NOT INCLUDE IT
     filepaths = []
-    for i in range(2, 20):#977):
+    for i in range(2, 977):
         last_part = ""
         if i >= 100:
             last_part += str(i)
@@ -109,6 +109,7 @@ def run_lstm():
         # err = error_function(nn, test_loader)
         # logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
+        torch.cude.empty_cache()
         compute_metrics(nn, test_loader, device)
 
     # test the model

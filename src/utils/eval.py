@@ -64,8 +64,8 @@ def compute_metrics(model, testloader, device):
 
     for i, (inputs, t) in enumerate(testloader):
         inputs = inputs.to(device)
-        # t = t.to(device)
-        outputs = model(inputs).to(torch.device("cpu"))
+        t = t.to(device)
+        outputs = model(inputs)#.to(torch.device("cpu"))
 
         # If both targets and outputs are 1D Go from probabilities to classification
         #preds = (outputs + 0.5).to(torch.device("cpu")).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
@@ -75,7 +75,7 @@ def compute_metrics(model, testloader, device):
 
         preds = torch.nn.functional.one_hot(preds, num_classes=2)
         t = torch.nn.functional.one_hot(t, num_classes=2)
-        t = t.to(torch.device("cpu"))
+        #t = t.to(torch.device("cpu"))
         if predictions is None:
             predictions = preds
             targets = t
@@ -83,11 +83,13 @@ def compute_metrics(model, testloader, device):
         else:
             predictions = torch.cat([predictions, preds])
             targets = torch.cat([targets, t])
-            probabilities = torch.cat([probabilities, outputs.to(torch.device("cpu"))])
+            probabilities = torch.cat([probabilities, outputs])#.to(torch.device("cpu"))])
 
-    predictions = predictions.detach().numpy()
-    targets = targets.detach().numpy()
-    probabilities = probabilities.detach().numpy()
+    predictions = predictions.to(torch.device("cpu")).detach().numpy()
+    targets = targets.to(torch.device("cpu")).detach().numpy()
+    probabilities = probabilities.to(torch.device("cpu")).detach().numpy()
+
+    torch.cude.empty_cache()
 
     logging.info("predictions : {}".format(np.shape(predictions)))
     logging.info("targets : {}".format(np.shape(targets)))
@@ -139,5 +141,5 @@ def measure_confidence(probabilities, predictions, targets):
     # Negative confidence
     indices = np.where(predictions != targets)
     negative_confidence = np.average(np.abs((targets[indices] - probabilities[indices])))
-        
+
     return overall_confidence, positive_confidence, negative_confidence
