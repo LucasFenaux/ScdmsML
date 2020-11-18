@@ -66,11 +66,14 @@ def compute_metrics(model, testloader, device):
         inputs = inputs.to(device)
         t = t.to(device)
         outputs = model(inputs)#.to(torch.device("cpu"))
-
+        logging.info("{}".format(i))
         # If both targets and outputs are 1D Go from probabilities to classification
         #preds = (outputs + 0.5).to(torch.device("cpu")).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
 
         # Else
+
+        # If edelting the variables doesnt work, then try detaching before
+        # doing the computations
         _, preds = torch.max(outputs, 1)
 
         preds = torch.nn.functional.one_hot(preds, num_classes=2)
@@ -84,12 +87,16 @@ def compute_metrics(model, testloader, device):
             predictions = torch.cat([predictions, preds])
             targets = torch.cat([targets, t])
             probabilities = torch.cat([probabilities, outputs])#.to(torch.device("cpu"))])
+        del t
+        del preds
+        del outputs
+        del inputs
 
     predictions = predictions.to(torch.device("cpu")).detach().numpy()
     targets = targets.to(torch.device("cpu")).detach().numpy()
     probabilities = probabilities.to(torch.device("cpu")).detach().numpy()
 
-    torch.cude.empty_cache()
+    torch.cuda.empty_cache()
 
     logging.info("predictions : {}".format(np.shape(predictions)))
     logging.info("targets : {}".format(np.shape(targets)))

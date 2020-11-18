@@ -109,7 +109,7 @@ def run_lstm():
         # err = error_function(nn, test_loader)
         # logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
-        torch.cude.empty_cache()
+        torch.cuda.empty_cache()
         compute_metrics(nn, test_loader, device)
 
     # test the model
