@@ -45,11 +45,7 @@ def pre_processing():
     logging.info("getting all events")
     matrix = get_all_events(filepaths)
     logging.info("done getting events")
-    # logging.info(row_dict.keys())
     logging.info("size of the data matrix {}".format(sys.getsizeof(matrix)))
-    # with open('raw_data_dict.pickle', 'wb') as handle:
-
-    #    pickle.dump(row_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
     # we only care about event number and channel
     logging.info("matrix shape before column deletion {}".format(np.shape(matrix)))
     matrix = np.delete(matrix, [1, 2, 4], axis=1)
@@ -63,7 +59,6 @@ def pre_processing_part2():
     for i in range(np.shape(data)[0]):
         row = []
         for j in range(np.shape(data)[1]):
-            # train_data[i][j] = np.array([train_data[i][j], 0])
             row.append(np.array([data[i][j]]))
         row = np.array(row)
         data_3D.append(row)
@@ -78,15 +73,15 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
 
     @trainer.on(Events.ITERATION_COMPLETED(every=log_interval))
     def log_training_loss(trainer):
-        #print("Epoch[{}] Loss: {:.2f}".format(trainer.state.epoch, trainer.state.output))
+        logging.info("Epoch[{}] Loss: {:.2f}".format(trainer.state.epoch, trainer.state.output))
         writer.add_scalar("training/batch_loss", trainer.state.output, trainer.state.epoch)
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(trainer):
         evaluator.run(train_loader)
         metrics = evaluator.state.metrics
-        #print("Training Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
-        #      .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
+        logging.info("Training Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
+                     .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
         writer.add_scalar("training/avg_loss", metrics["nll"], trainer.state.epoch)
         writer.add_scalar("training/avg_accuracy", metrics["accuracy", trainer.state.epoch])
 
@@ -94,8 +89,8 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
     def log_testing_results(trainer):
         evaluator.run(test_loader)
         metrics = evaluator.state.metrics
-        #print("Validation Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
-        #      .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
+        logging.info("Validation Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
+                     .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
         writer.add_scalar("training/avg_loss", metrics["nll"], trainer.state.epoch)
         writer.add_scalar("training/avg_accuracy", metrics["accuracy", trainer.state.epoch])
 
