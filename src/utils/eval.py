@@ -140,16 +140,18 @@ def compute_accuracy(predictions, targets):
 
 def measure_confidence(probabilities, predictions, targets):
     """" Computes the overall confidence of the network, the confidence in its correct choices and
-    the confidence in its incorrect choices"""
+    the confidence in its incorrect choices
+    The higher the confidence, the more sure the network is of its choice
+    The relative confidence represents how much the network chooses one class over another"""
     # First overall confidence
-    overall_confidence = np.average(np.abs((targets - probabilities)))
+    overall_confidence = 1 - np.average(np.abs((targets - probabilities)))
 
     # Positive confidence
     indices = np.where(predictions == targets)
-    positive_confidence = np.average(np.abs((targets[indices] - probabilities[indices])))
+    positive_confidence = 1 - np.average(np.abs((targets[indices] - probabilities[indices])))
 
     # Negative confidence
     indices = np.where(predictions != targets)
-    negative_confidence = np.average(np.abs((targets[indices] - probabilities[indices])))
+    negative_confidence = 1 - np.average(np.abs((targets[indices] - probabilities[indices])))
 
     return overall_confidence, positive_confidence, negative_confidence

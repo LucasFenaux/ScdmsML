@@ -77,10 +77,10 @@ def pre_processing_part2():
 
 def run_lstm_1():
     """ Run lstm network on the data that has only 1 attribute (1 pulse from 1 channel) per input"""
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.info("device : {}".format(device))
     assert torch.cuda.is_available()
-    pin_memory = (device.type == "cuda")
+    #pin_memory = (device.type == "cuda")
     # num_cpus = cpu_count()
     # logging.info("Number of CPUs: {}".format(num_cpus))
     num_workers = 8
