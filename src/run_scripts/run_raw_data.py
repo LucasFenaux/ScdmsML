@@ -83,7 +83,7 @@ def run_lstm():
     # num_cpus = cpu_count()
     # logging.info("Number of CPUs: {}".format(num_cpus))
     num_workers = 8
-    batch_size = 2048
+    batch_size = 4096
 
     criterion = torch.nn.CrossEntropyLoss()
     #criterion = torch.nn.BCELoss()
@@ -97,7 +97,7 @@ def run_lstm():
 
     nn = LSTMClassifier(input_size, hidden_size, num_layers, output_dim=2).to(device)
 
-    optimizer = optim.SGD(nn.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
 
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
 
@@ -110,14 +110,15 @@ def run_lstm():
         # logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
         torch.cuda.empty_cache()
-        compute_metrics(nn, test_loader, device)
+        acc = compute_metrics(nn, test_loader, device)
+        logging.info("Accuracy: {}".format(acc))
 
     # test the model
     loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
     # err = error_function(nn, test_loader)
     logging.info("Final Torch Loss: {}".format(loss))
-    compute_metrics(nn, test_loader, device)
-    # logging.info("Final Torch Err: {}".format(err))
+    acc = compute_metrics(nn, test_loader, device)
+    logging.info("Final Torch Accuracy: {}".format(acc))
 
 
 if __name__ == "__main__":

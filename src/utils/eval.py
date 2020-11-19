@@ -66,7 +66,7 @@ def compute_metrics(model, testloader, device):
         inputs = inputs.to(device)
         t = t.to(device)
         outputs = model(inputs)#.to(torch.device("cpu"))
-        logging.info("{}".format(i))
+        #logging.info("{}".format(i))
         # If both targets and outputs are 1D Go from probabilities to classification
         #preds = (outputs + 0.5).to(torch.device("cpu")).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
 
@@ -102,9 +102,9 @@ def compute_metrics(model, testloader, device):
 
     torch.cuda.empty_cache()
 
-    logging.info("predictions : {}".format(np.shape(predictions)))
-    logging.info("targets : {}".format(np.shape(targets)))
-    logging.info("probabilities : {}".format(np.shape(probabilities)))
+    #logging.info("predictions : {}".format(np.shape(predictions)))
+    #logging.info("targets : {}".format(np.shape(targets)))
+    #logging.info("probabilities : {}".format(np.shape(probabilities)))
 
     # We first compute the accuracy of the network
     accuracy = compute_accuracy(predictions, targets)
