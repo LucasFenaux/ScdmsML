@@ -89,10 +89,10 @@ def run_lstm():
     #criterion = torch.nn.BCELoss()
 
     epochs = 1000
-    learning_rate = 0.0005
+    learning_rate = 0.001
 
     input_size = 1
-    hidden_size = 20
+    hidden_size = 50
     num_layers = 3
 
     nn = LSTMClassifier(input_size, hidden_size, num_layers, output_dim=2).to(device)
@@ -109,8 +109,9 @@ def run_lstm():
         # err = error_function(nn, test_loader)
         # logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
-        torch.cuda.empty_cache()
-        compute_metrics(nn, test_loader, device)
+        if i % 20 == 0:
+            torch.cuda.empty_cache()
+            compute_metrics(nn, test_loader, device)
 
     # test the model
     loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
