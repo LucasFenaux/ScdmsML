@@ -75,7 +75,8 @@ def pre_processing_part2():
     np.save("../../data/raw_events/pre_processed_data_3D_1_attribute.npy", data)
 
 
-def run_lstm():
+def run_lstm_1():
+    """ Run lstm network on the data that has only 1 attribute (1 pulse from 1 channel) per input"""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.info("device : {}".format(device))
     assert torch.cuda.is_available()
@@ -83,7 +84,7 @@ def run_lstm():
     # num_cpus = cpu_count()
     # logging.info("Number of CPUs: {}".format(num_cpus))
     num_workers = 8
-    batch_size = 2048
+    batch_size = 4096
 
     criterion = torch.nn.CrossEntropyLoss()
     #criterion = torch.nn.BCELoss()
@@ -97,7 +98,7 @@ def run_lstm():
 
     nn = LSTMClassifier(input_size, hidden_size, num_layers, output_dim=2).to(device)
 
-    optimizer = optim.SGD(nn.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
 
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
 
@@ -109,20 +110,22 @@ def run_lstm():
         # err = error_function(nn, test_loader)
         # logging.info("Acc: {}".format(err))
         logging.info("Loss: {}".format(loss))
+
         if i % 20 == 0:
             torch.cuda.empty_cache()
-            compute_metrics(nn, test_loader, device)
+            acc = compute_metrics(nn, test_loader, device)
+            logging.info("Accuracy: {}".format(acc))
 
     # test the model
     loss = train_nn(test_loader, nn, criterion, optimizer, True, device)
     # err = error_function(nn, test_loader)
     logging.info("Final Torch Loss: {}".format(loss))
-    compute_metrics(nn, test_loader, device)
-    # logging.info("Final Torch Err: {}".format(err))
+    acc = compute_metrics(nn, test_loader, device)
+    logging.info("Final Torch Accuracy: {}".format(acc))
 
 
 if __name__ == "__main__":
     #pre_processing()
     #pre_processing_part2()
     #data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
-    run_lstm()
+    run_lstm_1()

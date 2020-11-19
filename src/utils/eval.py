@@ -66,7 +66,7 @@ def compute_metrics(model, testloader, device):
         inputs = inputs.to(device)
         t = t.to(device)
         outputs = model(inputs)#.to(torch.device("cpu"))
-        logging.info("{}".format(i))
+        #logging.info("{}".format(i))
         # If both targets and outputs are 1D Go from probabilities to classification
         #preds = (outputs + 0.5).to(torch.device("cpu")).to(torch.int64)  # <0.5 goes to 0 and >0.5 goes to 1
 
