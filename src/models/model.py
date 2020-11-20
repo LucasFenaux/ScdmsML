@@ -16,6 +16,6 @@ class LSTMClassifier(nn.Module):
 
     def forward(self, x):
         lstm_out, self.hidden = self.lstm(x, self.hidden)
-        y  = self.hidden2label(lstm_out[-1])
+        y = self.hidden2label(lstm_out[-1])
         log_probs = F.log_softmax(y)
         return log_probs
