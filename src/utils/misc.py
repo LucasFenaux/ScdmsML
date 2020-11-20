@@ -1,6 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch.nn as nn
+from os import path
+
+
+def get_tensorboard_log_dir():
+    if not path.exists('../results/files/tb_logs'):
+        return path.join("../results/files/tb_logs")
+    i = 1
+    while path.exists('../results/files/tb_logs_{}'.format(i)):
+        i += 1
+    return path.join("../results/files/tb_logs_{}".format(i))
 
 
 def cut_energy(variables, energies, cut=10):
