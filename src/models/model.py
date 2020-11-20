@@ -5,10 +5,13 @@ import torch.nn.functional as F
 
 class LSTMClassifier(nn.Module):
 
-    def __init__(self, embedding_dim, hidden_dim, num_layer, label_size):  # , batch_size)
+    def __init__(self, embedding_dim, hidden_dim, num_layer, label_size, batch_size):
+        super(LSTMClassifier, self).__init__()
         self.lstm = nn.LSTM(embedding_dim, hidden_dim, num_layer)
         self.hidden2label = nn.Linear(hidden_dim, label_size)
         self.hidden = self.init_hidden()
+        self.batch_size = batch_size
+        self.hidden_dim = hidden_dim
 
     def init_hidden(self):
         return (torch.zeros(1, self.batch_size, self.hidden_dim), 
