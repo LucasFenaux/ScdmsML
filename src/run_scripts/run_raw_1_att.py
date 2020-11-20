@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 import torch
 import torch.optim as optim
 import logging
-logging.basicConfig(filename='./raw_data_log.log', level=logging.DEBUG)
+logging.basicConfig(filename='./raw_data_log.log', level=logging.WARNING)
 
 from src.utils import get_all_events
 from src.utils.data_loading import torch_raw_data_loader
@@ -74,44 +74,43 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
 
     @trainer.on(Events.ITERATION_COMPLETED(every=log_interval))
     def log_training_loss(trainer):
-        logging.info("Epoch[{}] Loss: {:.2f}".format(trainer.state.epoch, trainer.state.output))
+        print("Epoch[{}] Loss: {:.2f}".format(trainer.state.epoch, trainer.state.output))
         writer.add_scalar("training/batch_loss", trainer.state.output, trainer.state.epoch)
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(trainer):
         evaluator.run(train_loader)
         metrics = evaluator.state.metrics
-        logging.info("Training Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
+        print("Training Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
                      .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
         writer.add_scalar("training/avg_loss", metrics["nll"], trainer.state.epoch)
-        writer.add_scalar("training/avg_accuracy", metrics["accuracy", trainer.state.epoch])
+        writer.add_scalar("training/avg_accuracy", metrics["accuracy"], trainer.state.epoch)
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_testing_results(trainer):
         evaluator.run(test_loader)
         metrics = evaluator.state.metrics
-        logging.info("Validation Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
+        print("Validation Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
                      .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
         writer.add_scalar("training/avg_loss", metrics["nll"], trainer.state.epoch)
-        writer.add_scalar("training/avg_accuracy", metrics["accuracy", trainer.state.epoch])
+        writer.add_scalar("training/avg_accuracy", metrics["accuracy"], trainer.state.epoch)
 
 
 def run():
     num_workers = 8
-    batch_size = 4096
+    batch_size = 1600
 
     input_size = 1
-    hidden_size = 50
-    num_layers = 3
+    hidden_size = 3
+    num_layers = 2
 
-    epochs = 1000
-    learning_rate = 0.001
+    epochs = 500
+    learning_rate = 0.005
 
     assert torch.cuda.is_available()
 
     nn = LSTMClassifier(input_size, hidden_size, num_layers, output_dim=2).to(device)
-    train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers,
-                                                      pin_memory=pin_memory)
+    train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
     criterion = torch.nn.CrossEntropyLoss()
 
@@ -121,7 +120,7 @@ def run():
         "accuracy": Accuracy(),
         "nll": Loss(criterion)
     }
-    evaluator = create_supervised_evaluator(nn, metrics=val_metrics)
+    evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device)
 
     setup_event_handler(trainer, evaluator, train_loader, test_loader)
 
