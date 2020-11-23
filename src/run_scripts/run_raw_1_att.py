@@ -110,11 +110,13 @@ def run():
 
     assert torch.cuda.is_available()
 
-    nn = LSTMClassifier(input_size, hidden_size, num_layers, label_size=1, batch_size=batch_size)
+    nn = LSTMClassifier(input_size, hidden_size, label_size=1)
     nn = nn.to(device)
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
-    criterion = torch.nn.CrossEntropyLoss()
+    
+    #criterion = torch.nn.CrossEntropyLoss()
+    criterion = torch.nn.BCEWithLogitsLoss
 
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
 
