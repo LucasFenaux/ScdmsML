@@ -3,14 +3,18 @@ import torch.nn as nn
 
 
 class LSTMClassifier(nn.Module):
-    def __init__(self, input_dim, hidden_dim, label_size):
+    def __init__(self, input_dim, hidden_dim, label_size, num_layers, batch_size):
         super().__init__()
         self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True)
         self.hidden2label = nn.Linear(hidden_dim, label_size)
+        self.num_layers = num_layers
+        self.batch_size = batch_size
 
     def forward(self, x):
-        _, (h_n, _) = self.lstm(x)
-        return self.hidden2label(h_n.reshape(x.shape[0], -1))
+        h0 = torch.zeros(self.num_layers, self.batch_size, self.hidden_dim)
+        c0 = torch.zeros(self.num_layers, self.batch_size, self.hidden_dim)
+        _, (h_n, _) = self.lstm(x, (h0, c0))
+        return self.hidden2label(h_n.reshape(x.shape[0], -1))[:, 0]
 
 
 # import torch.nn as nn

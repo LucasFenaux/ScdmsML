@@ -6,7 +6,7 @@ import torch
 # Modified source: https://www.kaggle.com/purplejester/a-simple-lstm-based-time-series-classifier
 
 
-class LSTMClassifier(nn.Module):
+class OldLSTMClassifier(nn.Module):
 
     def _forward_unimplemented(self, *input: Any) -> None:
         pass
