@@ -27,7 +27,7 @@ class LSTMClassifier(nn.Module):
         out = self.fc(out[:, -1, :])
         #print(out)
         #out = self.sigmoid(out)
-        return out
+        return out[:, 0]
 
     def init_hidden(self, x):
         h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim)
