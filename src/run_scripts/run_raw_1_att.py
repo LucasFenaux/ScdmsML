@@ -116,7 +116,7 @@ def run():
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
     
     #criterion = torch.nn.CrossEntropyLoss()
-    criterion = torch.nn.BCEWithLogitsLoss
+    criterion = torch.nn.BCEWithLogitsLoss()
 
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
 
