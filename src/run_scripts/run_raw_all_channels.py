@@ -28,7 +28,7 @@ pin_memory = (device.type == "cuda")
 
 # Only run it once to preprocess the data
 def pre_processing():
-    """Preprocessing for the raw data files, it is the same as the run_raw_all_channels one"""
+    """Preprocessing for the raw data files, it is the same as the run_raw_1_att one"""
     # First file is data dump, DO NOT INCLUDE IT
     filepaths = []
     for i in range(2, 977):
@@ -57,17 +57,37 @@ def pre_processing():
 
 
 def pre_processing_part2():
-    """This pre-processing part however is different from the run_raw_all_channels one"""
+    """This pre-processing part however is different from the run_raw_1_att one"""
     data = np.load("../../data/raw_events/pre_processed_data.npy")
     data_3D = []
+    # keep track of the events already encountered and keep track of their index in the data array
+    event_map = {}
+    # keep track of which channels have already been added for a particular event as we want
+    # each channel to be at the same index for each data sample in the data array
+    channel_tracker = {}
+
+    all_event_numbers = data[:, 0]
+    all_channel_numbers = data[:, 1]
+    for ev_num in all_event_numbers:
+        channel_tracker[ev_num] = []
+    data = np.delete(data, 0, axis=1)  # remove ev
+    data = np.delete(data, 0, axis=1)  # remove channel num
+
+    event_counter = 0  # counter to index the events into the data array
+
     for i in range(np.shape(data)[0]):
-        row = []
-        for j in range(np.shape(data)[1]):
-            row.append(np.array([data[i][j]]))
-        row = np.array(row)
-        data_3D.append(row)
-    data = np.array(data_3D)
-    np.save("../../data/raw_events/pre_processed_data_3D_1_attribute.npy", data)
+        event = all_event_numbers[i]
+        channel = all_channel_numbers[i]
+
+        # see if we encountered that event already
+        if event not in list(event_map.keys()):
+            event_map[event] = event_counter
+            event_counter += 1
+        event_idx = event_map[event]
+
+        # we want to keep the channels ordered ascending
+        channel_idx = 0
+        for j in channel_tracker[event]:
 
 
 def setup_event_handler(trainer, evaluator, train_loader, test_loader):
@@ -135,4 +155,3 @@ def run():
 
 if __name__ == '__main__':
     run()
-
