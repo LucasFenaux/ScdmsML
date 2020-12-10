@@ -9,6 +9,7 @@ class LSTMClassifier(nn.Module):
         self.hidden2label = nn.Linear(hidden_dim, label_size)
         self.num_layers = num_layers
         self.batch_size = batch_size
+        self.hidden_dim = hidden_dim
 
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, self.batch_size, self.hidden_dim)
