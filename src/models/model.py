@@ -10,12 +10,13 @@ class LSTMClassifier(nn.Module):
         self.num_layers = num_layers
         self.batch_size = batch_size
         self.hidden_dim = hidden_dim
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).cuda()
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).cuda()
         _, (h_n, _) = self.lstm(x, (h0, c0))
-        return self.hidden2label(h_n.reshape(x.shape[0], -1))[:, 0]
+        return self.sigmoid(self.hidden2label(h_n.reshape(x.shape[0], -1))[:, 0])
 
 
 # import torch.nn as nn
