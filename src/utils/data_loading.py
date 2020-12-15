@@ -379,12 +379,12 @@ def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     logging.info("test data shape {}".format(np.shape(test_data)))
     train_data = torch.Tensor(train_data)
     train_targets = torch.Tensor(train_targets)
-    #train_targets = torch.nn.functional.one_hot(train_targets)
+    train_targets = torch.nn.functional.one_hot(train_targets)
     #assert torch.max(train_targets) <=1 and torch.min(train_targets) >= 0
     test_data = torch.Tensor(test_data)
     test_targets = torch.Tensor(test_targets)
     #assert torch.max(test_targets) <=1 and torch.min(test_targets) >=0
-    #test_targets = torch.nn.functional.one_hot(test_targets)
+    test_targets = torch.nn.functional.one_hot(test_targets)
     
     #logging.info("{}, {}".format(type(train_targets), type(test_targets)))
     train_dataset = TensorDataset(train_data, train_targets)
