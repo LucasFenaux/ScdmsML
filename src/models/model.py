@@ -16,7 +16,7 @@ class LSTMClassifier(nn.Module):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).cuda()
         c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).cuda()
         _, (h_n, _) = self.lstm(x, (h0, c0))
-        return self.sigmoid(self.hidden2label(h_n.reshape(x.shape[0], -1))[:, 0])
+        return self.sigmoid(self.hidden2label(h_n.reshape(x.shape[0], -1)))
 
 
 # import torch.nn as nn

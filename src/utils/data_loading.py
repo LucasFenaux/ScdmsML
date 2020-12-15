@@ -371,18 +371,18 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
 
 def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
-    data, targets, target_evs = raw_data_loader_2("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data_3D_1_attribute.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
+    data, targets, target_evs = raw_data_loader_2("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data_3D_1_attribute_testing.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
 
     train_data, test_data, train_targets, test_targets = train_test_split(data, targets) # can add target_evs in there if you want to keep track of them as well
 
     logging.info("train data shape {}".format(np.shape(train_data)))
     logging.info("test data shape {}".format(np.shape(test_data)))
     train_data = torch.Tensor(train_data)
-    train_targets = torch.IntTensor(train_targets)
+    train_targets = torch.Tensor(train_targets)
     #train_targets = torch.nn.functional.one_hot(train_targets)
     #assert torch.max(train_targets) <=1 and torch.min(train_targets) >= 0
     test_data = torch.Tensor(test_data)
-    test_targets = torch.IntTensor(test_targets)
+    test_targets = torch.Tensor(test_targets)
     #assert torch.max(test_targets) <=1 and torch.min(test_targets) >=0
     #test_targets = torch.nn.functional.one_hot(test_targets)
     

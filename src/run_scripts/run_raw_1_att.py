@@ -31,7 +31,7 @@ def pre_processing():
     """Preprocessing for the raw data files, it is the same as the run_raw_all_channels one"""
     # First file is data dump, DO NOT INCLUDE IT
     filepaths = []
-    for i in range(2, 3):#977):
+    for i in range(2,977):
         last_part = ""
         if i >= 100:
             last_part += str(i)
@@ -53,7 +53,7 @@ def pre_processing():
     logging.info("matrix shape before column deletion {}".format(np.shape(matrix)))
     matrix = np.delete(matrix, [1, 2, 4], axis=1)
     logging.info("matrix shape after deletion {}".format(np.shape(matrix)))
-    np.save("../../data/raw_events/pre_processed_data_testing.npy", matrix)
+    np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
 
 def pre_processing_part2():
@@ -118,7 +118,9 @@ def run():
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
 
     #criterion = torch.nn.CrossEntropyLoss()
-    criterion = torch.nn.BCEWithLogitsLoss()
+    #criterion = torch.nn.BCEWithLogitsLoss()
+    criterion = torch.nn.BCELoss()
+    #criterion = torch.nn.NLLLoss()
 
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
 
@@ -134,6 +136,7 @@ def run():
 
 
 if __name__ == '__main__':
-    #run()
-    pre_processing()
+    run()
+    #pre_processing()
+    #pre_processing_part2()
 
