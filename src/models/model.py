@@ -5,7 +5,8 @@ import torch.nn as nn
 class LSTMClassifier(nn.Module):
     def __init__(self, input_dim, hidden_dim, label_size, num_layers, batch_size):
         super().__init__()
-        self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True)
+        #self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True)
+        self.lstm = nn.LSTMCell(input_dim, hidden_dim)
         self.hidden2label = nn.Linear(hidden_dim, label_size)
         self.num_layers = num_layers
         self.batch_size = batch_size
@@ -13,8 +14,8 @@ class LSTMClassifier(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).cuda()
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).cuda()
+        h0 = torch.zeros(x.size(0), self.hidden_dim).cuda()
+        c0 = torch.zeros(x.size(0), self.hidden_dim).cuda()
         _, (h_n, _) = self.lstm(x, (h0, c0))
         return self.sigmoid(self.hidden2label(h_n.reshape(x.shape[0], -1)))
 
