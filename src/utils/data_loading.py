@@ -371,12 +371,12 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
 
 def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
-    data, targets, target_evs = raw_data_loader_1("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data_testing.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
+    data, targets, target_evs = raw_data_loader_2("/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data_3D_1_attribute_testing.npy", "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat", num_scatter_save_path)
 
     train_data, test_data, train_targets, test_targets = train_test_split(data, targets) # can add target_evs in there if you want to keep track of them as well
 
-    logging.info("train data shape {}".format(np.shape(train_data)))
-    logging.info("test data shape {}".format(np.shape(test_data)))
+    print("train data shape {}".format(np.shape(train_data)))
+    print("test data shape {}".format(np.shape(test_data)))
     train_data = torch.Tensor(train_data)
     train_targets = torch.Tensor(train_targets).to(torch.int64)
     train_targets = torch.nn.functional.one_hot(train_targets).to(torch.float)
@@ -391,7 +391,6 @@ def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     train_sampler = RandomSampler(train_dataset)
     train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
                               pin_memory=pin_memory)
-
     test_dataset = TensorDataset(test_data, test_targets)
     test_sampler = RandomSampler(test_dataset)
     test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
