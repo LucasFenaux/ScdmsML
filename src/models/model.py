@@ -16,14 +16,12 @@ class LSTMClassifier(nn.Module):
 
     def forward(self, x):
 
-        # Prepare the shape for LSTM Cells
-        out = x.view(self.sequence_length, x.size(0), -1)
 
         hs = torch.zeros(x.size(0), self.hidden_dim).cuda()
         cs = torch.zeros(x.size(0), self.hidden_dim).cuda()
 
         for i in self.sequence_length:
-            hs, cs = self.lstm(out[i], (hs, cs))
+            hs, cs = self.lstm(x[:, i], (hs, cs))
             hs = self.dropout(hs)
             cs = self.dropout(cs)
 
