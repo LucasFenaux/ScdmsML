@@ -17,7 +17,7 @@ class LSTMClassifier(nn.Module):
     def forward(self, x):
 
         # Prepare the shape for LSTM Cells
-        out = x.view(self.sequence_len, x.size(0), -1)
+        out = x.view(self.sequence_length, x.size(0), -1)
 
         hs = torch.zeros(x.size(0), self.hidden_dim).cuda()
         cs = torch.zeros(x.size(0), self.hidden_dim).cuda()
@@ -26,7 +26,7 @@ class LSTMClassifier(nn.Module):
             hs, cs = self.lstm(out[i], (hs, cs))
             hs = self.dropout(hs)
             cs = self.dropout(cs)
-            
+
         # return self.sigmoid(self.hidden2label(hs.reshape(x.shape[0], -1)))
         return self.sigmoid(self.hidden2label(hs))
 
