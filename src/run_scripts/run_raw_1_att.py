@@ -103,6 +103,7 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
 def run():
     num_workers = 8
     batch_size = 1600
+    sequence_length = 4098
 
     input_size = 1
     hidden_size = 50
@@ -114,7 +115,7 @@ def run():
 
     assert torch.cuda.is_available()
 
-    nn = LSTMClassifier(input_size, hidden_size, label_size=2, num_layers=num_layers, batch_size=batch_size)
+    nn = LSTMClassifier(input_size, hidden_size, label_size=2, num_layers=num_layers, sequence_length=sequence_length)
     nn = nn.to(device)
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
