@@ -20,6 +20,8 @@ from ignite.engine import Events, create_supervised_trainer, create_supervised_e
 from ignite.metrics import Accuracy, Loss
 from torchvision import transforms
 from src.utils.misc import get_tensorboard_log_dir
+from functools import partial
+
 num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 log_dir = get_tensorboard_log_dir()
 
@@ -72,32 +74,32 @@ def pre_processing_part2():
 
 
 def setup_event_handler(trainer, evaluator, train_loader, test_loader):
-    log_interval = 10
+    log_interval = 50
 
     writer = SummaryWriter(log_dir=log_dir)
 
-    @trainer.on(Events.ITERATION_COMPLETED(every=log_interval))
+    @trainer.on(Events.ITERATION_COMPLETED)
     def log_training_loss(trainer):
         print("Epoch[{}] Loss: {:.5f}".format(trainer.state.epoch, trainer.state.output))
-        writer.add_scalar("training/batch_loss", trainer.state.output, trainer.state.epoch)
+        writer.add_scalar("training_iteration_loss", trainer.state.output, trainer.state.epoch)
 
-    @trainer.on(Events.EPOCH_COMPLETED)
+    @trainer.on(Events.EPOCH_COMPLETED(every=log_interval))
     def log_training_results(trainer):
         evaluator.run(train_loader)
         metrics = evaluator.state.metrics
-        print("Training Results - Epoch: {}  Avg accuracy: {:.5f} Avg loss: {:.5f}"
+        print("Training Results - Epoch: {}  Accuracy: {:.5f} Loss: {:.5f}"
                      .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
-        writer.add_scalar("training/avg_loss", metrics["nll"], trainer.state.epoch)
-        writer.add_scalar("training/avg_accuracy", metrics["accuracy"], trainer.state.epoch)
+        writer.add_scalar("training_loss", metrics["nll"], trainer.state.epoch)
+        writer.add_scalar("training_accuracy", metrics["accuracy"], trainer.state.epoch)
 
-    @trainer.on(Events.EPOCH_COMPLETED)
+    @trainer.on(Events.EPOCH_COMPLETED(every=log_interval))
     def log_testing_results(trainer):
         evaluator.run(test_loader)
         metrics = evaluator.state.metrics
-        print("Validation Results - Epoch: {}  Avg accuracy: {:.5f} Avg loss: {:.5f}"
+        print("Validation Results - Epoch: {}  Accuracy: {:.5f} Loss: {:.5f}"
                      .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
-        writer.add_scalar("training/avg_loss", metrics["nll"], trainer.state.epoch)
-        writer.add_scalar("training/avg_accuracy", metrics["accuracy"], trainer.state.epoch)
+        writer.add_scalar("testing_loss", metrics["nll"], trainer.state.epoch)
+        writer.add_scalar("testing_accuracy", metrics["accuracy"], trainer.state.epoch)
 
 
 def run():
@@ -127,14 +129,20 @@ def run():
 
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
 
+    def ot_func(output):
+        x, y, y_pred = output
+        y_pred = (torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float)
+        return (y_pred, y)
+
     val_metrics = {
-        "accuracy": Accuracy(),
+        "accuracy": Accuracy(output_transform=partial(ot_func)),
         "nll": Loss(criterion)
     }
-    lb = lambda x, y, y_pred: (torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float), y)
+
+    # lb = lambda x, y, y_pred: (torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float), y)
     #transform = transforms.Lambda(lb)
 #SBATCH --gres=grpu:1
-    evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device, output_transform=lb)
+    evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device)
 
     setup_event_handler(trainer, evaluator, train_loader, test_loader)
 
