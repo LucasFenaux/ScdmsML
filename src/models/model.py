@@ -16,11 +16,10 @@ class LSTMClassifier(nn.Module):
 
     def forward(self, x):
 
-
         hs = torch.zeros(x.size(0), self.hidden_dim).cuda()
         cs = torch.zeros(x.size(0), self.hidden_dim).cuda()
 
-        for i in self.sequence_length:
+        for i in range(self.sequence_length):
             hs, cs = self.lstm(x[:, i], (hs, cs))
             hs = self.dropout(hs)
             cs = self.dropout(cs)
