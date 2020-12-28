@@ -1,0 +1,6 @@
+Regular LSTM - LSTM Cell
+V1.0
+
+hidden_size=50
+lr=0.005
+criterion = torch.nn.BCELoss()

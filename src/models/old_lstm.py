@@ -4,8 +4,7 @@ import torch.nn as nn
 import torch
 
 # Modified source: https://www.kaggle.com/purplejester/a-simple-lstm-based-time-series-classifier
-
-
+# Deprecated
 class OldLSTMClassifier(nn.Module):
 
     def _forward_unimplemented(self, *input: Any) -> None:
