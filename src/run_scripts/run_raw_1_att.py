@@ -104,7 +104,7 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
 
 def run():
     num_workers = 8
-    batch_size = 1028
+    batch_size = 512
     sequence_length = 4096
 
     input_size = 1
