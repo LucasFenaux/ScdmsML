@@ -113,7 +113,7 @@ def run():
 
     epochs = 5000
     
-    learning_rate = 0.01
+    learning_rate = 0.005
 
     assert torch.cuda.is_available()
 
