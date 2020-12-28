@@ -74,11 +74,11 @@ def pre_processing_part2():
 
 
 def setup_event_handler(trainer, evaluator, train_loader, test_loader):
-    log_interval = 50
+    log_interval = 25
 
     writer = SummaryWriter(log_dir=log_dir)
 
-    @trainer.on(Events.ITERATION_COMPLETED)
+    @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_loss(trainer):
         print("Epoch[{}] Loss: {:.5f}".format(trainer.state.epoch, trainer.state.output))
         writer.add_scalar("training_iteration_loss", trainer.state.output, trainer.state.epoch)
@@ -104,16 +104,16 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
 
 def run():
     num_workers = 8
-    batch_size = 300
+    batch_size = 1028
     sequence_length = 4096
 
     input_size = 1
-    hidden_size = 50
+    hidden_size = 200
     num_layers = 1
 
-    epochs = 5000
+    epochs = 1000
     
-    learning_rate = 0.005
+    learning_rate = 0.01  # 0.005, 0.001, 0.1
 
     assert torch.cuda.is_available()
 
@@ -130,8 +130,8 @@ def run():
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
 
     def ot_func(output):
-        x, y, y_pred = output
-        y_pred = (torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float)
+        y_pred, y = output
+        y_pred = torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float)
         return (y_pred, y)
 
     val_metrics = {
