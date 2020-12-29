@@ -27,19 +27,10 @@ if __name__ == '__main__':
     # Using Data From Random Row for Training and Testing
 
     row = train.iloc[90000, :].values
-    X = row[0:549]
-    y = row[1:550]
+    X = row[0:164]
+    y = row[165]
     # Splitting the dataset into the Training set and Test set
     from sklearn.model_selection import train_test_split
-
-    X_3D = []
-    for i in range(np.shape(X)[0]):
-        r = []
-        for j in range(np.shape(X)[1]):
-            r.append(np.array([X[i][j]]))
-        r = np.array(r)
-        X_3D.append(r)
-    X = np.array(X_3D)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 
@@ -50,8 +41,8 @@ if __name__ == '__main__':
     X_train = np.reshape(X_train, (-1, 1))
     y_train = np.reshape(y_train, (-1, 1))
     X_train = sc.fit_transform(X_train)
+    X_train = np.reshape(X_train, (165, 1, 1))
     y_train = sc.fit_transform(y_train)
-
 
     input_size = 1
     hidden_size = 8
@@ -83,7 +74,6 @@ if __name__ == '__main__':
     inputs = np.reshape(inputs, (-1, 1))
     inputs = sc.transform(inputs)
     inputs = np.reshape(inputs, (165, 1, 1))
-    X = np.array(X_3D)
     y_pred = regressor(inputs).detach().to(torch.device('cpu')).numpy()
     y_pred = sc.inverse_transform(y_pred)
 
