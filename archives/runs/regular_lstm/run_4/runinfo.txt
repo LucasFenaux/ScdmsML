@@ -1,6 +1,6 @@
 Regular LSTM - LSTM Cell
 V1.0
 
-hidden_size=100
-learning_rate=0.1
+hidden_size=200
+learning_rate=0.01
 criterion = torch.nn.BCELoss()
