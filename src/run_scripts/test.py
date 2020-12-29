@@ -18,7 +18,7 @@ from torch.utils.data import TensorDataset, RandomSampler, DataLoader
 
 
 if __name__ == '__main__':
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device('cpu')
     train = pd.read_csv('../input/train_1.csv').fillna(0)
     page = train['Page']
     train.head()
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     train_dataset = TensorDataset(train_data, train_targets)
     train_sampler = RandomSampler(train_dataset)
     train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=1,
-                              pin_memory=True)
+                              pin_memory=False)
 
     trainer.run(train_loader, max_epochs=epochs)
 
