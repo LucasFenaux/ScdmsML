@@ -18,7 +18,6 @@ from src.models.model import LSTMClassifier
 from torch.utils.tensorboard import SummaryWriter
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
 from ignite.metrics import Accuracy, Loss
-from torchvision import transforms
 from src.utils.misc import get_tensorboard_log_dir
 from functools import partial
 
