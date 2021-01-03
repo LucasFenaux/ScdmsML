@@ -1,0 +1,9 @@
+Regular LSTM - LSTM Cell
+V1.1
+Normalized Data: True
+
+hidden_size=50
+learning_rate=0.01
+criterion = torch.nn.BCELoss()
+
+
