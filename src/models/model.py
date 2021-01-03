@@ -15,6 +15,13 @@ class LSTMClassifier(nn.Module):
         self.sigmoid = nn.Sigmoid()
         self.dropout = nn.Dropout(dropout_rate)
 
+    def initialize_weights(self):
+        for name, param in self.lstm.named_parameters():
+            if 'bias' in name:
+                nn.init.constant(param, 0.0)
+            elif 'weight' in name:
+                nn.init.xavier_normal(param)
+
     def forward(self, x):
 
         hs = torch.zeros(x.size(0), self.hidden_dim).cuda()
