@@ -168,7 +168,8 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    normalizing()
+    #run()
     #pre_processing()
     #pre_processing_part2()
 
