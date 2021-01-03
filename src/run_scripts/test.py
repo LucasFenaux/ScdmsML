@@ -51,7 +51,7 @@ if __name__ == '__main__':
     epochs = 100
 
     criterion = torch.nn.MSELoss()
-    regressor = LSTMClassifier(input_size, hidden_size, label_size, 1, 165)
+    regressor = LSTMClassifier(input_size, hidden_size, label_size)
     regressor = regressor.to(device)
     learning_rate = 0.01
     optimizer = optim.Adam(regressor.parameters(), lr=learning_rate)

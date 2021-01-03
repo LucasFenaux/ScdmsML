@@ -19,7 +19,7 @@ from ignite.engine import Events, create_supervised_trainer, create_supervised_e
 from ignite.metrics import Accuracy, Loss
 from functools import partial
 import random
-
+random.seed(111)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 pin_memory = (device.type == "cuda")
 
@@ -180,17 +180,15 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
 def run():
     num_workers = 2
     batch_size = 64
-    sequence_length = 150
 
     input_size = 1
-    hidden_size = 8
-    num_layers = 1
+    hidden_size = 10
 
     epochs = 300
 
-    learning_rate = 0.01  # 0.005, 0.001, 0.1
+    learning_rate = 0.005  # 0.005, 0.001, 0.1
 
-    nn = LSTMClassifier(input_size, hidden_size, label_size=2, num_layers=num_layers, sequence_length=sequence_length)
+    nn = LSTMClassifier(input_size, hidden_size, label_size=2, dropout_rate=0.1)
     nn = nn.to(device)
     train_loader, test_loader = level_1_multiple_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)

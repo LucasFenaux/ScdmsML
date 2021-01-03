@@ -73,7 +73,7 @@ if __name__ == '__main__':
     epochs = 3
 
     criterion = torch.nn.BCELoss()
-    regressor = LSTMClassifier(input_size, hidden_size, label_size, 1, 165)
+    regressor = LSTMClassifier(input_size, hidden_size, label_size)
     regressor = regressor.to(device)
     learning_rate = 0.01
     optimizer = optim.Adam(regressor.parameters(), lr=learning_rate)
