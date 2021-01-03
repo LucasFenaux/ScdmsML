@@ -20,6 +20,7 @@ from ignite.engine import Events, create_supervised_trainer, create_supervised_e
 from ignite.metrics import Accuracy, Loss
 from src.utils.misc import get_tensorboard_log_dir
 from functools import partial
+from sklearn.preprocessing import MinMaxScaler
 
 num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 log_dir = get_tensorboard_log_dir()
@@ -70,6 +71,26 @@ def pre_processing_part2():
         data_3D.append(row)
     data = np.array(data_3D)
     np.save("../../data/raw_events/pre_processed_data_3D_1_attribute.npy", data)
+
+
+def normalizing():
+    """ Normalizes the pre-processed data """
+    data = np.load("../../data/raw_events/pre_processed_data_3D_1_attribute.npy")
+    # remove event numbers and channel numbers
+    all_event_numbers = data[:, 0]
+    data = np.delete(data, 0, axis=1)
+    all_channel_numbers = data[:, 1]
+    data = np.delete(data, 0, axis=1)
+
+    normalizer = MinMaxScaler()
+    normalizer.fit(data)
+    print('Min: %f, Max: %f' % (normalizer.data_min_, normalizer.data_max_))
+    normalized_data = normalizer.transform(data)
+    # re-insert event number and channel number
+    normalized_data = np.insert(normalized_data, 0, all_channel_numbers, axis=0)
+    normalized_data = np.insert(normalized_data, 0, all_event_numbers, axis=0)
+
+    np.save("../../data/raw_events/pre_processed_normalized_data_3D_1_attribute.npy", normalized_data)
 
 
 def setup_event_handler(trainer, evaluator, train_loader, test_loader):
