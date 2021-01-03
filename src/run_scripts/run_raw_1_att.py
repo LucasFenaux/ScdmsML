@@ -18,9 +18,8 @@ from src.models.model import LSTMClassifier
 from torch.utils.tensorboard import SummaryWriter
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
 from ignite.metrics import Accuracy, Loss
-from src.utils.misc import get_tensorboard_log_dir
+from src.utils.misc import get_tensorboard_log_dir, NDMinMaxScaler
 from functools import partial
-from sklearn.preprocessing import MinMaxScaler
 
 num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 log_dir = get_tensorboard_log_dir()
@@ -82,7 +81,7 @@ def normalizing():
     all_channel_numbers = data[:, 1]
     data = np.delete(data, 0, axis=1)
 
-    normalizer = MinMaxScaler()
+    normalizer = NDMinMaxScaler()
     normalizer.fit(data)
     print('Min: %f, Max: %f' % (normalizer.data_min_, normalizer.data_max_))
     normalized_data = normalizer.transform(data)
