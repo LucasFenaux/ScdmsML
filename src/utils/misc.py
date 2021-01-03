@@ -17,6 +17,7 @@ class NDMinMaxScaler(TransformerMixin):
         # back to its original shape
         if len(X.shape) > 1:
             self._orig_shape = X.shape[1:]
+            print("orig_shape:", self._orig_shape)
         X = self._flatten(X)
         self._scaler.fit(X, **kwargs)
         return self

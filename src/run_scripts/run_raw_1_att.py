@@ -77,17 +77,20 @@ def normalizing():
     data = np.load("../../data/raw_events/pre_processed_data_3D_1_attribute.npy")
     # remove event numbers and channel numbers
     all_event_numbers = data[:, 0]
+    print(np.shape(all_event_numbers))
     data = np.delete(data, 0, axis=1)
     all_channel_numbers = data[:, 1]
+    print(np.shape(all_channel_numbers))
     data = np.delete(data, 0, axis=1)
 
     normalizer = NDMinMaxScaler()
     normalizer.fit(data)
-    print('Min: %f, Max: %f' % (normalizer.data_min_, normalizer.data_max_))
+    print(np.shape(data))
     normalized_data = normalizer.transform(data)
+    print(np.shape(normalized_data))
     # re-insert event number and channel number
-    normalized_data = np.insert(normalized_data, 0, all_channel_numbers, axis=0)
-    normalized_data = np.insert(normalized_data, 0, all_event_numbers, axis=0)
+    normalized_data = np.insert(normalized_data, 0, all_channel_numbers, axis=1)
+    normalized_data = np.insert(normalized_data, 0, all_event_numbers, axis=1)
 
     np.save("../../data/raw_events/pre_processed_normalized_data_3D_1_attribute.npy", normalized_data)
 
@@ -167,8 +170,8 @@ def run():
 
 
 if __name__ == '__main__':
-    normalizing()
-    #run()
+    #normalizing()
+    run()
     #pre_processing()
     #pre_processing_part2()
 
