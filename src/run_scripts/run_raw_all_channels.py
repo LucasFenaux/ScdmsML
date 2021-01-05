@@ -18,7 +18,7 @@ from src.models.model import LSTMClassifier
 from torch.utils.tensorboard import SummaryWriter
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
 from ignite.metrics import Accuracy, Loss
-from src.utils.misc import get_tensorboard_log_dir
+from src.utils.misc import get_tensorboard_log_dir, NDMinMaxScaler
 num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
 log_dir = get_tensorboard_log_dir()
 
@@ -90,42 +90,66 @@ def pre_processing_part2():
         for j in channel_tracker[event]:
 
 
+
+def normalizing():
+    """ Normalizes the pre-processed data """
+    data = np.load("../../data/raw_events/pre_processed_data_3D_all_attribute.npy")
+    # remove event numbers and channel numbers
+    all_event_numbers = data[:, 0]
+    print(np.shape(all_event_numbers))
+    data = np.delete(data, 0, axis=1)
+    all_channel_numbers = data[:, 1]
+    print(np.shape(all_channel_numbers))
+    data = np.delete(data, 0, axis=1)
+
+    normalizer = NDMinMaxScaler()
+    normalizer.fit(data)
+    print(np.shape(data))
+    normalized_data = normalizer.transform(data)
+    print(np.shape(normalized_data))
+    # re-insert event number and channel number
+    normalized_data = np.insert(normalized_data, 0, all_channel_numbers, axis=1)
+    normalized_data = np.insert(normalized_data, 0, all_event_numbers, axis=1)
+
+    np.save("../../data/raw_events/pre_processed_normalized_data_3D_all_attribute.npy", normalized_data)
+
+
+
 def setup_event_handler(trainer, evaluator, train_loader, test_loader):
     log_interval = 10
 
     writer = SummaryWriter(log_dir=log_dir)
 
-    @trainer.on(Events.ITERATION_COMPLETED(every=log_interval))
-    def log_training_loss(trainer):
-        print("Epoch[{}] Loss: {:.2f}".format(trainer.state.epoch, trainer.state.output))
-        writer.add_scalar("training/batch_loss", trainer.state.output, trainer.state.epoch)
-
     @trainer.on(Events.EPOCH_COMPLETED)
+    def log_training_loss(trainer):
+        print("Epoch[{}] Loss: {:.5f}".format(trainer.state.epoch, trainer.state.output))
+        writer.add_scalar("training_iteration_loss", trainer.state.output, trainer.state.epoch)
+
+    @trainer.on(Events.EPOCH_COMPLETED(every=log_interval))
     def log_training_results(trainer):
         evaluator.run(train_loader)
         metrics = evaluator.state.metrics
-        print("Training Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
+        print("Training Results - Epoch: {}  Accuracy: {:.5f} Loss: {:.5f}"
                      .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
-        writer.add_scalar("training/avg_loss", metrics["nll"], trainer.state.epoch)
-        writer.add_scalar("training/avg_accuracy", metrics["accuracy"], trainer.state.epoch)
+        writer.add_scalar("training_loss", metrics["nll"], trainer.state.epoch)
+        writer.add_scalar("training_accuracy", metrics["accuracy"], trainer.state.epoch)
 
-    @trainer.on(Events.EPOCH_COMPLETED)
+    @trainer.on(Events.EPOCH_COMPLETED(every=log_interval))
     def log_testing_results(trainer):
         evaluator.run(test_loader)
         metrics = evaluator.state.metrics
-        print("Validation Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}"
+        print("Validation Results - Epoch: {}  Accuracy: {:.5f} Loss: {:.5f}"
                      .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
-        writer.add_scalar("training/avg_loss", metrics["nll"], trainer.state.epoch)
-        writer.add_scalar("training/avg_accuracy", metrics["accuracy"], trainer.state.epoch)
+        writer.add_scalar("testing_loss", metrics["nll"], trainer.state.epoch)
+        writer.add_scalar("testing_accuracy", metrics["accuracy"], trainer.state.epoch)
 
 
 def run():
     num_workers = 8
-    batch_size = 1600
+    batch_size = 512
 
-    input_size = 1
-    hidden_size = 3
-    num_layers = 2
+    input_size = 8
+    hidden_size = 8
 
     epochs = 500
     learning_rate = 0.005
@@ -138,7 +162,7 @@ def run():
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
 
     #criterion = torch.nn.CrossEntropyLoss()
-    criterion = torch.nn.BCEWithLogitsLoss()
+    criterion = torch.nn.BCELoss()
 
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
 
