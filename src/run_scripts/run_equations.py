@@ -10,18 +10,21 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 import torch
 import torch.optim as optim
 import logging
-logging.basicConfig(filename='./raw_data_log.log', level=logging.WARNING)
+logging.basicConfig(filename='./raw_data_log.log', level=logging.INFO)
 
-from torch.utils.data import TensorDataset, RandomSampler, DataLoader
+from torch.utils.data import TensorDataset, RandomSampler, DataLoader, SequentialSampler
 from sklearn.model_selection import train_test_split
-from src.models.model import LSTMClassifier
+from src.models.model import LSTMClassifier, BiLSTMClassifier
+from src.utils.misc import CustomTracker
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
 from ignite.metrics import Accuracy, Loss
 from functools import partial
 import random
 random.seed(111)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-pin_memory = (device.type == "cuda")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# pin_memory = (device.type == "cuda")
+device = torch.device("cpu")
+pin_memory = False
 
 
 def level_1_multiple_loader(batch_size=64, num_workers=1, pin_memory=False):
@@ -74,7 +77,7 @@ def level_1_multiple_loader(batch_size=64, num_workers=1, pin_memory=False):
     train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
                               pin_memory=pin_memory)
     test_dataset = TensorDataset(test_data, test_targets)
-    test_sampler = RandomSampler(test_dataset)
+    test_sampler = SequentialSampler(test_dataset)
     test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
                              pin_memory=pin_memory)
     return train_loader, test_loader
@@ -142,13 +145,13 @@ def level_2_multiple_loader(batch_size=64, num_workers=1, pin_memory=False):
     train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
                               pin_memory=pin_memory)
     test_dataset = TensorDataset(test_data, test_targets)
-    test_sampler = RandomSampler(test_dataset)
+    test_sampler = SequentialSampler(test_dataset)
     test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
                              pin_memory=pin_memory)
     return train_loader, test_loader
 
 
-def setup_event_handler(trainer, evaluator, train_loader, test_loader):
+def setup_event_handler(trainer, evaluator, train_loader, test_loader, custom_tracker):
     log_interval = 3
 
     # writer = SummaryWriter(log_dir=log_dir)
@@ -173,26 +176,27 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
         metrics = evaluator.state.metrics
         print("Validation Results - Epoch: {}  Accuracy: {:.5f} Loss: {:.5f}"
               .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
+        custom_tracker.assessment()
         # writer.add_scalar("testing_loss", metrics["nll"], trainer.state.epoch)
         # writer.add_scalar("testing_accuracy", metrics["accuracy"], trainer.state.epoch)
 
 
 def run():
     num_workers = 2
-    batch_size = 64
+    batch_size = 128
 
     input_size = 1
     hidden_size = 10
 
     epochs = 300
 
-    learning_rate = 0.005  # 0.005, 0.001, 0.1
+    learning_rate = 0.01  # 0.005, 0.001, 0.1
 
-    nn = LSTMClassifier(input_size, hidden_size, label_size=2, dropout_rate=0.1)
+    nn = BiLSTMClassifier(input_size, hidden_size, label_size=2, device=device, dropout_rate=0.1)
     nn = nn.to(device)
     train_loader, test_loader = level_1_multiple_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
-
+    custom_tracker = CustomTracker(nn, device, test_loader, 0)
     # criterion = torch.nn.CrossEntropyLoss()
     # criterion = torch.nn.BCEWithLogitsLoss()
     criterion = torch.nn.BCELoss()
@@ -212,7 +216,7 @@ def run():
 
     evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device)
 
-    setup_event_handler(trainer, evaluator, train_loader, test_loader)
+    setup_event_handler(trainer, evaluator, train_loader, test_loader, custom_tracker)
 
     trainer.run(train_loader, max_epochs=epochs)
 

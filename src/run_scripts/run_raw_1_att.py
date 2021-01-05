@@ -96,7 +96,7 @@ def normalizing():
 
 
 def setup_event_handler(trainer, evaluator, train_loader, test_loader):
-    log_interval = 25
+    log_interval = 10
 
     writer = SummaryWriter(log_dir=log_dir)
 
@@ -137,7 +137,7 @@ def run():
 
     assert torch.cuda.is_available()
 
-    nn = LSTMClassifier(input_size, hidden_size, label_size=2, dropout_rate=dropout_rate)
+    nn = LSTMClassifier(input_size, hidden_size, label_size=2, device=device, dropout_rate=dropout_rate)
     nn = nn.to(device)
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)

@@ -4,6 +4,52 @@ from os import path
 import numpy as np
 from sklearn.base import TransformerMixin
 from sklearn.preprocessing import MinMaxScaler
+import logging
+# logging.basicConfig(filename='./custom_tracker.log', level=logging.INFO)
+
+
+class CustomTracker(object):
+    """ tracker that requires a sequential sampler for the loader used"""
+    def __init__(self, model, device, loader, idx):
+        self.model = model
+        self.device = device
+        self.loader = loader
+        self.idx = idx
+        self.sample = None
+        self.sample_target = None
+        assert self.idx < self.loader.__len__()
+        self.mark_sample()
+        self.assessment()
+
+    def mark_sample(self):
+        i = 0
+        for idx, (inputs, target) in enumerate(self.loader):
+            if ((idx+1)*self.loader.batch_size)+i > self.idx:
+                arr_idx = self.idx - i
+                self.sample = inputs[arr_idx]
+                self.sample_target = target[arr_idx]
+                break
+            else:
+                i += self.loader.batch_size
+        logging.log(level=logging.INFO, msg="sample logged: "+str(self.sample))
+        logging.log(level=logging.INFO, msg="with target: "+str(self.sample_target))
+
+    def assessment(self):
+        i = 0
+        for idx, (inputs, target) in enumerate(self.loader):
+            # for i in range(inputs.size()[0]):
+            #     if torch.all(torch.eq(inputs[i], self.sample)):
+            if ((idx+1)*self.loader.batch_size)+i > self.idx:
+                sample_idx = self.idx - i
+                logging.log(level=logging.INFO, msg="found sample")
+                inputs = inputs.to(self.device)
+                output = self.model(inputs)
+                # logging.log(level=logging.INFO, msg="input assessment: " + str(inputs[sample_idx]))
+                # logging.log(level=logging.INFO, msg="target assessment: " + str(target[sample_idx]))
+                logging.log(level=logging.INFO, msg="output assessment: " + str(output[sample_idx]))
+                break
+            else:
+                i += self.loader.batch_size
 
 
 class NDMinMaxScaler(TransformerMixin):

@@ -4,7 +4,7 @@ import uproot
 from .misc import cut_energy, generate_fit_matrix, generate_unsupervised_fit_matrix
 import os
 import torch
-from torch.utils.data import TensorDataset, RandomSampler, DataLoader
+from torch.utils.data import TensorDataset, RandomSampler, DataLoader, SequentialSampler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from .Raw_data import read_file
@@ -392,7 +392,7 @@ def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
     train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
                               pin_memory=pin_memory)
     test_dataset = TensorDataset(test_data, test_targets)
-    test_sampler = RandomSampler(test_dataset)
+    test_sampler = SequentialSampler(test_dataset)
     test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
                              pin_memory=pin_memory)
 

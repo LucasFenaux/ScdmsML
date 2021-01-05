@@ -1,11 +1,10 @@
 Regular LSTM - LSTM Cell
 V1.1
 Normalized Data: True
-run number: 58585353
+run number: 58698638
 
-hidden_size=50
+hidden_size=5
 learning_rate=0.01
 criterion = torch.nn.BCELoss()
-
 
 
