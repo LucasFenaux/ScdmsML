@@ -126,10 +126,10 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
 
 def run():
     num_workers = 8
-    batch_size = 1024
+    batch_size = 2048
     dropout_rate = 0.1
     input_size = 1
-    hidden_size = 50
+    hidden_size = 5
 
     epochs = 1000
     
