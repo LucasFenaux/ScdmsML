@@ -104,5 +104,31 @@ class BiLSTMClassifier(nn.Module):
         for fwd, bwd in zip(f,b):
             input_tensor = torch.cat((fwd, bwd), 1)
             hs, cs = self.lstm(input_tensor, (hs, cs))
+            # maybe add dropout here as well if necessary
 
         return self.sigmoid(self.hidden2label(hs))
+
+
+class FFClassifier(nn.Module):
+    """ V0.0 of a classic FeedForward Classifying network """
+    def __init__(self, dropout_rate):
+        super(FFClassifier, self).__init__()
+        self.nn = nn.Sequential(nn.Linear(4096, 2048), nn.Dropout(dropout_rate), nn.LeakyReLU(), nn.Linear(2048, 1024),
+                                nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(1024, 512),
+                                nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(512, 256),
+                                nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(256, 100),
+                                nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(100, 30),
+                                nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(30, 2), nn.Sigmoid())
+
+        self.dropout_rate = dropout_rate
+        self.initialize_weights()
+
+    def initialize_weights(self):
+        for name, param in self.nn.named_parameters():
+            if 'bias' in name:
+                nn.init.constant(param, 0.0)
+            elif 'weight' in name:
+                nn.init.xavier_normal(param)
+
+    def forward(self, x):
+        return self.nn(x)

@@ -12,6 +12,7 @@ import torch.optim as optim
 import logging
 logging.basicConfig(filename='./raw_data_log.log', level=logging.WARNING)
 
+import pickle
 from src.utils import get_all_events
 from src.utils.data_loading import torch_raw_data_loader
 from src.models.model import LSTMClassifier
@@ -62,6 +63,8 @@ def pre_processing_part2():
     data_3D = []
     # keep track of the events already encountered and keep track of their index in the data array
     event_map = {}
+    # keep track of indices to be able to map an index in the data array to an event
+    index_map = {}
     # keep track of which channels have already been added for a particular event as we want
     # each channel to be at the same index for each data sample in the data array
     channel_tracker = {}
@@ -87,32 +90,43 @@ def pre_processing_part2():
 
         # we want to keep the channels ordered ascending
         channel_idx = 0
+        assert channel not in channel_tracker[event]
         for j in channel_tracker[event]:
+            if channel < j:
+                channel_idx += 1
+            else:
+                break
+        channel_tracker[event] = channel_tracker[event].insert(channel_idx, channel)
+        if np.shape(data_3D)[0] <= event_idx:
+            # this event has no channels in the data yet.
+            index_map[event_idx] = event
+            event_array = []
+            for k in range(np.shape(data)[1]):
+                event_array.append(np.array([data[i][k]]))
+            event_array = np.array(event_array)
+            data_3D.append(event_array)
+        else:
+            for k in range(np.shape(data)[1]):
+                data_3D = data_3D[event_idx][k].insert(channel_idx, data[i][k])
+    data_3D = np.array(data_3D)
+    np.save("../../data/raw_events/pre_processed_data_3D_all_attribute.npy", data_3D)
 
+    # save the index map for label reconstruction
+    with open('../../data/raw_events/index_map.pkl', 'wb') as f:
+        pickle.dump(index_map, f, pickle.HIGHEST_PROTOCOL)
 
 
 def normalizing():
     """ Normalizes the pre-processed data """
     data = np.load("../../data/raw_events/pre_processed_data_3D_all_attribute.npy")
-    # remove event numbers and channel numbers
-    all_event_numbers = data[:, 0]
-    print(np.shape(all_event_numbers))
-    data = np.delete(data, 0, axis=1)
-    all_channel_numbers = data[:, 1]
-    print(np.shape(all_channel_numbers))
-    data = np.delete(data, 0, axis=1)
-
+    # this pre-processed data does not contain channel or event number anymore
     normalizer = NDMinMaxScaler()
     normalizer.fit(data)
     print(np.shape(data))
     normalized_data = normalizer.transform(data)
     print(np.shape(normalized_data))
-    # re-insert event number and channel number
-    normalized_data = np.insert(normalized_data, 0, all_channel_numbers, axis=1)
-    normalized_data = np.insert(normalized_data, 0, all_event_numbers, axis=1)
 
     np.save("../../data/raw_events/pre_processed_normalized_data_3D_all_attribute.npy", normalized_data)
-
 
 
 def setup_event_handler(trainer, evaluator, train_loader, test_loader):
@@ -159,9 +173,8 @@ def run():
     nn = LSTMClassifier(input_size, hidden_size, label_size=1)
     nn = nn.to(device)
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
-    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate, weight_decay=0.001)
 
-    #criterion = torch.nn.CrossEntropyLoss()
     criterion = torch.nn.BCELoss()
 
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
@@ -178,4 +191,6 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    pre_processing_part2()
+    normalizing()
+    # run()

@@ -14,7 +14,7 @@ logging.basicConfig(filename='./raw_data_log.log', level=logging.WARNING)
 
 from src.utils import get_all_events
 from src.utils.data_loading import torch_raw_data_loader
-from src.models.model import LSTMClassifier
+from src.models.model import BiLSTMClassifier, LSTMClassifier, FFClassifier
 from torch.utils.tensorboard import SummaryWriter
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
 from ignite.metrics import Accuracy, Loss
@@ -124,10 +124,10 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
         writer.add_scalar("testing_accuracy", metrics["accuracy"], trainer.state.epoch)
 
 
-def run():
+def run_lstm():
     num_workers = 8
     batch_size = 2048
-    dropout_rate = 0.1
+    dropout_rate = 0.2
     input_size = 1
     hidden_size = 5
 
@@ -140,12 +140,9 @@ def run():
     nn = LSTMClassifier(input_size, hidden_size, label_size=2, device=device, dropout_rate=dropout_rate)
     nn = nn.to(device)
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
-    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate, weight_decay=0.001)
 
-    #criterion = torch.nn.CrossEntropyLoss()
-    #criterion = torch.nn.BCEWithLogitsLoss()
     criterion = torch.nn.BCELoss()
-    #criterion = torch.nn.NLLLoss()
 
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
 
@@ -159,9 +156,84 @@ def run():
         "nll": Loss(criterion)
     }
 
-    # lb = lambda x, y, y_pred: (torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float), y)
-    #transform = transforms.Lambda(lb)
-#SBATCH --gres=grpu:1
+    evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device)
+
+    setup_event_handler(trainer, evaluator, train_loader, test_loader)
+
+    trainer.run(train_loader, max_epochs=epochs)
+
+
+def run_bilstm():
+    num_workers = 8
+    batch_size = 512
+    dropout_rate = 0.2
+    input_size = 1
+    hidden_size = 20
+
+    epochs = 1000
+
+    learning_rate = 0.01  # 0.005, 0.001, 0.1
+
+    assert torch.cuda.is_available()
+
+    nn = BiLSTMClassifier(input_size, hidden_size, label_size=2, device=device, dropout_rate=dropout_rate)
+    nn = nn.to(device)
+    train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers,
+                                                      pin_memory=pin_memory)
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate, weight_decay=0.001)
+
+    criterion = torch.nn.BCELoss()
+
+    trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
+
+    def ot_func(output):
+        y_pred, y = output
+        y_pred = torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float)
+        return (y_pred, y)
+
+    val_metrics = {
+        "accuracy": Accuracy(output_transform=partial(ot_func)),
+        "nll": Loss(criterion)
+    }
+
+    evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device)
+
+    setup_event_handler(trainer, evaluator, train_loader, test_loader)
+
+    trainer.run(train_loader, max_epochs=epochs)
+
+
+def run_ff():
+    num_workers = 8
+    batch_size = 512
+    dropout_rate = 0.5
+
+    epochs = 1000
+
+    learning_rate = 0.01  # 0.005, 0.001, 0.1
+
+    assert torch.cuda.is_available()
+
+    nn = FFClassifier(dropout_rate=0.5)
+    nn = nn.to(device)
+    train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers,
+                                                      pin_memory=pin_memory)
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
+
+    criterion = torch.nn.BCELoss()
+
+    trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
+
+    def ot_func(output):
+        y_pred, y = output
+        y_pred = torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float)
+        return (y_pred, y)
+
+    val_metrics = {
+        "accuracy": Accuracy(output_transform=partial(ot_func)),
+        "nll": Loss(criterion)
+    }
+
     evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device)
 
     setup_event_handler(trainer, evaluator, train_loader, test_loader)
@@ -171,7 +243,7 @@ def run():
 
 if __name__ == '__main__':
     #normalizing()
-    run()
+    run_lstm()
     #pre_processing()
     #pre_processing_part2()
 

@@ -11,6 +11,7 @@ from .Raw_data import read_file
 import pandas as pd
 import logging
 import time
+import pickle
 
 cedar_username = "fenauxlu"
 #logging.basicConfig(filename='./data_loading_log.log', level=logging.DEBUG)
@@ -367,6 +368,69 @@ def data_loader(rq_var_names, rrq_var_names, new_var_info, num_scatter_save_path
         feature_names.extend(features)
 
     return train_data, train_targets, test_data, test_targets, test_dict, all_variables, feature_names
+
+
+def torch_all_channels_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
+    num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
+    data, targets, target_evs = all_channels_raw_data_loader(
+        "/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_normalized_data_3D_all_attribute.npy",
+        "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat",
+        num_scatter_save_path)
+    print(np.min(data), np.max(data))
+    train_data, test_data, train_targets, test_targets = train_test_split(data,
+                                                                          targets)  # can add target_evs in there if you want to keep track of them as well
+
+    print("train data shape {}".format(np.shape(train_data)))
+    print("test data shape {}".format(np.shape(test_data)))
+    train_data = torch.Tensor(train_data)
+    train_targets = torch.Tensor(train_targets).to(torch.int64)
+    train_targets = torch.nn.functional.one_hot(train_targets).to(torch.float)
+    # assert torch.max(train_targets) <=1 and torch.min(train_targets) >= 0
+    test_data = torch.Tensor(test_data)
+    test_targets = torch.Tensor(test_targets).to(torch.int64)
+    # assert torch.max(test_targets) <=1 and torch.min(test_targets) >=0
+    test_targets = torch.nn.functional.one_hot(test_targets).to(torch.float)
+
+    # logging.info("{}, {}".format(type(train_targets), type(test_targets)))
+    train_dataset = TensorDataset(train_data, train_targets)
+    train_sampler = RandomSampler(train_dataset)
+    train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
+                              pin_memory=pin_memory)
+    test_dataset = TensorDataset(test_data, test_targets)
+    test_sampler = SequentialSampler(test_dataset)
+    test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
+                             pin_memory=pin_memory)
+
+    return train_loader, test_loader
+
+
+def all_channels_raw_data_loader(data_file, init_path, num_scatter_save_path, det=14):
+    all_data = np.load(data_file)
+    scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
+    evs = list(single_scatter.keys())
+    targets = []
+    with open('/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/index_map.pkl', 'wb') as f:
+        all_indices = pickle.load(f)
+
+    all_event_numbers = list(all_indices.values())
+    target_event_numbers = []
+    logging.info("data matrix shape {}".format(np.shape(all_data)))
+    assert np.shape(all_data)[1] == 4096
+
+    for i in range(np.shape(all_data)[0]):
+        ev = all_indices[i]
+        if ev not in evs:
+            logging.info("event number {} was not present in the init file and got deleted".format(ev))
+            continue
+        target_event_numbers.append(ev)
+        targets.append(single_scatter[ev])
+
+    if len(np.unique(all_event_numbers)) - len(np.unique(target_event_numbers)) > 0:
+        logging.info("{} raw data events were not found in the init file".format(len(all_event_numbers) - len(target_event_numbers)))
+    else:
+        logging.info("all raw data events were found in the init file")
+
+    return all_data, targets, target_event_numbers
 
 
 def torch_raw_data_loader(batch_size=256,num_workers=1, pin_memory=False):
