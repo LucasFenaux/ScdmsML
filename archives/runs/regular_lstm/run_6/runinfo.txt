@@ -5,6 +5,7 @@ run number: 58698638
 
 hidden_size=5
 learning_rate=0.01
+dropout_rate=0.1
 criterion = torch.nn.BCELoss()
 
 

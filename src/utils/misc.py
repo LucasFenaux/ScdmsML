@@ -20,6 +20,7 @@ class CustomTracker(object):
         assert self.idx < self.loader.__len__()
         self.mark_sample()
         self.assessment()
+        self.best_test_accuracy = 0
 
     def mark_sample(self):
         i = 0
@@ -50,6 +51,13 @@ class CustomTracker(object):
                 break
             else:
                 i += self.loader.batch_size
+
+    def update_best_accuracy(self, accuracy):
+        if accuracy > self.best_test_accuracy:
+            self.best_test_accuracy = accuracy
+
+    def get_best_accuracy(self):
+        return self.best_test_accuracy
 
 
 class NDMinMaxScaler(TransformerMixin):
