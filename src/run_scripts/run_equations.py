@@ -27,7 +27,7 @@ device = torch.device("cpu")
 pin_memory = False
 
 
-def level_1_multiple_loader(batch_size=64, num_workers=1, pin_memory=False):
+def level_1_multiple_loader(batch_size=64, num_workers=1, sequence_length=150, pin_memory=False):
     """ Generates sequence of numbers based on some equations with some truth values """
     # Select a random number as seed for the algorithm
     r = random.randint(1, 100)
@@ -35,7 +35,7 @@ def level_1_multiple_loader(batch_size=64, num_workers=1, pin_memory=False):
     # Now we generate n true samples and n false samples
     n = 1000
     # With sequence length of l
-    l = 150
+    l = sequence_length
     samples = []
     labels = []
     for i in range(n):
@@ -83,7 +83,7 @@ def level_1_multiple_loader(batch_size=64, num_workers=1, pin_memory=False):
     return train_loader, test_loader
 
 
-def level_2_multiple_loader(batch_size=64, num_workers=1, pin_memory=False):
+def level_2_multiple_loader(batch_size=64, num_workers=1, sequence_length=150, pin_memory=False):
     """ Generates sequence of numbers based on some equations with some truth values """
     # Select a random number as seed for the algorithm
     r = random.randint(1, 100)
@@ -91,7 +91,7 @@ def level_2_multiple_loader(batch_size=64, num_workers=1, pin_memory=False):
     # Now we generate n true samples and n false samples
     n = 1000
     # With sequence length of l
-    l = 150
+    l = sequence_length
     samples = []
     labels = []
     for i in range(n):
@@ -177,6 +177,7 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader, custom_tr
         print("Validation Results - Epoch: {}  Accuracy: {:.5f} Loss: {:.5f}"
               .format(trainer.state.epoch, metrics["accuracy"], metrics["nll"]))
         custom_tracker.assessment()
+        custom_tracker.update_best_accuracy(metrics["accuracy"])
         # writer.add_scalar("testing_loss", metrics["nll"], trainer.state.epoch)
         # writer.add_scalar("testing_accuracy", metrics["accuracy"], trainer.state.epoch)
 
@@ -187,14 +188,16 @@ def run():
 
     input_size = 1
     hidden_size = 10
+    sequence_length = 2400
 
     epochs = 300
 
-    learning_rate = 0.01  # 0.005, 0.001, 0.1
+    learning_rate = 0.005  # 0.005, 0.001, 0.1
 
-    nn = BiLSTMClassifier(input_size, hidden_size, label_size=2, device=device, dropout_rate=0.1)
+    nn = BiLSTMClassifier(input_size, hidden_size, label_size=2, device=device, dropout_rate=0.2)
     nn = nn.to(device)
-    train_loader, test_loader = level_1_multiple_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
+    train_loader, test_loader = level_1_multiple_loader(batch_size=batch_size, num_workers=num_workers,
+                                                        sequence_length=sequence_length, pin_memory=pin_memory)
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
     custom_tracker = CustomTracker(nn, device, test_loader, 0)
     # criterion = torch.nn.CrossEntropyLoss()
@@ -219,6 +222,8 @@ def run():
     setup_event_handler(trainer, evaluator, train_loader, test_loader, custom_tracker)
 
     trainer.run(train_loader, max_epochs=epochs)
+
+    print("best accuracy: ", custom_tracker.get_best_accuracy())
 
 
 if __name__ == '__main__':
