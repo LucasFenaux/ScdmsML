@@ -163,7 +163,7 @@ def run():
     batch_size = 512
 
     input_size = 8
-    hidden_size = 8
+    hidden_size = 20
 
     epochs = 500
     learning_rate = 0.005

@@ -1,0 +1,17 @@
+Bi-LSTM - LSTM Cell
+V0.1
+Normalized Data: True
+run number: 59172226
+
+num_workers = 8
+batch_size = 512
+dropout_rate = 0.2
+input_size = 1
+hidden_size = 20
+
+epochs = 1000
+
+learning_rate = 0.01 
+
+weight_decay=0.001
+
