@@ -110,10 +110,10 @@ class BiLSTMClassifier(nn.Module):
 
 
 class FFClassifier(nn.Module):
-    """ V0.0 of a classic FeedForward Classifying network """
+    """ V0.1 of a classic FeedForward Classifying network """
     def __init__(self, dropout_rate):
         super(FFClassifier, self).__init__()
-        self.nn = nn.Sequential(nn.Linear(4096, 2048), nn.Dropout(dropout_rate), nn.LeakyReLU(), nn.Linear(2048, 1024),
+        self.nn = nn.Sequential(nn.Linear(4096, 2048), nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(2048, 1024),
                                 nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(1024, 512),
                                 nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(512, 256),
                                 nn.LeakyReLU(), nn.Dropout(dropout_rate), nn.Linear(256, 100),

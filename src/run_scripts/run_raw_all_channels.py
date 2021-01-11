@@ -90,6 +90,8 @@ def pre_processing_part2():
 
         # we want to keep the channels ordered ascending
         channel_idx = 0
+        if channel_tracker[event] is None:
+            channel_tracker[event] = []
         assert channel not in channel_tracker[event]
         for j in channel_tracker[event]:
             if channel < j:
@@ -102,12 +104,11 @@ def pre_processing_part2():
             index_map[event_idx] = event
             event_array = []
             for k in range(np.shape(data)[1]):
-                event_array.append(np.array([data[i][k]]))
-            event_array = np.array(event_array)
+                event_array.append([data[i][k]])
             data_3D.append(event_array)
         else:
             for k in range(np.shape(data)[1]):
-                data_3D = data_3D[event_idx][k].insert(channel_idx, data[i][k])
+                data_3D[event_idx][k].insert(channel_idx, data[i][k])
     data_3D = np.array(data_3D)
     np.save("../../data/raw_events/pre_processed_data_3D_all_attribute.npy", data_3D)
 
