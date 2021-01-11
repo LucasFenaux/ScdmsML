@@ -218,7 +218,7 @@ def run_ff():
     nn = nn.to(device)
     train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers,
                                                       pin_memory=pin_memory)
-    optimizer = optim.Adam(nn.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(nn.parameters(), lr=learning_rate, weight_decay=0.001)
 
     criterion = torch.nn.BCELoss()
 
@@ -243,7 +243,9 @@ def run_ff():
 
 if __name__ == '__main__':
     #normalizing()
-    run_lstm()
+    #run_lstm()
+    #run_bilstm()
+    run_ff()
     #pre_processing()
     #pre_processing_part2()
 
