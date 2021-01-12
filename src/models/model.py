@@ -83,7 +83,6 @@ class BiLSTMClassifier(nn.Module):
 
         hs = torch.zeros(x.size(0), self.hidden_dim*2).to(self.device)
         cs = torch.zeros(x.size(0), self.hidden_dim*2).to(self.device)
-
         # Performing Forward Pass
         f = []
         for i in range(x.size()[1]):
@@ -91,7 +90,6 @@ class BiLSTMClassifier(nn.Module):
             hf = self.dropout(hf)
             cf = self.dropout(cf)
             f.append(hf)
-
         # Performing Backward Pass
         b = []
         for i in reversed(range(x.size()[1])):
@@ -99,7 +97,6 @@ class BiLSTMClassifier(nn.Module):
             hb = self.dropout(hb)
             cb = self.dropout(cb)
             b.append(hb)
-
         # Performing LSTM Pass
         for fwd, bwd in zip(f,b):
             input_tensor = torch.cat((fwd, bwd), 1)

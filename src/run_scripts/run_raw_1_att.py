@@ -165,14 +165,14 @@ def run_lstm():
 
 def run_bilstm():
     num_workers = 8
-    batch_size = 512
+    batch_size = 1024
     dropout_rate = 0.2
     input_size = 1
     hidden_size = 20
 
     epochs = 1000
 
-    learning_rate = 0.01  # 0.005, 0.001, 0.1
+    learning_rate = 0.001  # 0.005, 0.001, 0.1
 
     assert torch.cuda.is_available()
 
@@ -244,8 +244,8 @@ def run_ff():
 if __name__ == '__main__':
     #normalizing()
     #run_lstm()
-    #run_bilstm()
-    run_ff()
+    run_bilstm()
+    #run_ff()
     #pre_processing()
     #pre_processing_part2()
 
