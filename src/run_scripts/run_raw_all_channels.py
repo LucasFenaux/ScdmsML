@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+print("starting imports")
 import numpy as np
 import sys
 import os
@@ -25,7 +26,7 @@ log_dir = get_tensorboard_log_dir()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 pin_memory = (device.type == "cuda")
-
+print("done with imports")
 
 # Only run it once to preprocess the data
 def pre_processing():
@@ -59,7 +60,9 @@ def pre_processing():
 
 def pre_processing_part2():
     """This pre-processing part however is different from the run_raw_1_att one"""
+    print("start loading")
     data = np.load("../../data/raw_events/pre_processed_data.npy")
+    print("loaded intial pre-processed data")
     data_3D = []
     # keep track of the events already encountered and keep track of their index in the data array
     event_map = {}
@@ -75,16 +78,18 @@ def pre_processing_part2():
         channel_tracker[ev_num] = []
     data = np.delete(data, 0, axis=1)  # remove ev
     data = np.delete(data, 0, axis=1)  # remove channel num
-
+    print("done setting up and removing ev and channel number from data matrix")
     event_counter = 0  # counter to index the events into the data array
-
-    for i in range(np.shape(data)[0]):
+    total_rows = np.shape(data)[0]
+    for i in range(total_rows):
+        print("{} out of {},  {}%".format(i, total_rows, float(i)/float(total_rows)))
         event = all_event_numbers[i]
         channel = all_channel_numbers[i]
 
         # see if we encountered that event already
         if event not in list(event_map.keys()):
             event_map[event] = event_counter
+            print("event {} added to map".format(event))
             event_counter += 1
         event_idx = event_map[event]
 
@@ -192,6 +197,8 @@ def run():
 
 
 if __name__ == '__main__':
+    print("program loaded, starting pre-processing")
     pre_processing_part2()
+    print("done with pre-processing, starting normalization")
     normalizing()
     # run()

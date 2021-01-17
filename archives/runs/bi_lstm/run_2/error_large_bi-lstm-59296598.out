@@ -1,0 +1,13 @@
+/project/6049244/fenauxlu/ScdmsML/src/models/model.py:64: UserWarning: nn.init.xavier_normal is now deprecated in favor of nn.init.xavier_normal_.
+  nn.init.xavier_normal(param)
+/project/6049244/fenauxlu/ScdmsML/src/models/model.py:62: UserWarning: nn.init.constant is now deprecated in favor of nn.init.constant_.
+  nn.init.constant(param, 0.0)
+/project/6049244/fenauxlu/ScdmsML/src/models/model.py:69: UserWarning: nn.init.xavier_normal is now deprecated in favor of nn.init.xavier_normal_.
+  nn.init.xavier_normal(param)
+/project/6049244/fenauxlu/ScdmsML/src/models/model.py:67: UserWarning: nn.init.constant is now deprecated in favor of nn.init.constant_.
+  nn.init.constant(param, 0.0)
+/project/6049244/fenauxlu/ScdmsML/src/models/model.py:74: UserWarning: nn.init.xavier_normal is now deprecated in favor of nn.init.xavier_normal_.
+  nn.init.xavier_normal(param)
+/project/6049244/fenauxlu/ScdmsML/src/models/model.py:72: UserWarning: nn.init.constant is now deprecated in favor of nn.init.constant_.
+  nn.init.constant(param, 0.0)
+slurmstepd: error: *** JOB 59296598 ON cdr2488 CANCELLED AT 2021-01-16T16:53:26 DUE TO TIME LIMIT ***
