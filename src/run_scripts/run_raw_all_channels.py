@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+#from __future__ import absolute_import
 print("starting imports")
 import numpy as np
 import sys
@@ -58,7 +58,7 @@ def pre_processing():
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
 
-def pre_processing_part2():
+def pre_processing_part_2():
     """This pre-processing part however is different from the run_raw_1_att one"""
     print("start loading")
     data = np.load("../../data/raw_events/pre_processed_data.npy")
@@ -196,9 +196,43 @@ def run():
     trainer.run(train_loader, max_epochs=epochs)
 
 
+def test_function():
+    print("start loading")
+    data = np.load("../../data/raw_events/pre_processed_data.npy")
+    data_3D = []
+    # keep track of the events already encountered and keep track of their index in the data array
+    event_map = {}
+    # keep track of indices to be able to map an index in the data array to an event
+    index_map = {}
+    # keep track of which channels have already been added for a particular event as we want
+    # each channel to be at the same index for each data sample in the data array
+    channel_tracker = {}
+
+    all_event_numbers = data[:, 0]
+    all_channel_numbers = data[:, 1]
+    for ev_num in all_event_numbers:
+        channel_tracker[ev_num] = []
+    data = np.delete(data, 0, axis=1)  # remove ev
+    data = np.delete(data, 0, axis=1)  # remove channel num
+    print("done setting up and removing ev and channel number from data matrix")
+    event_counter = 0  # counter to index the events into the data array
+    total_rows = np.shape(data)[0]
+    print("total_rows: {}".format(total_rows))
+    for i in range(total_rows):
+        event = all_event_numbers[i]
+        channel = all_channel_numbers[i]
+        # see if we encountered that event already
+        if event not in list(event_map.keys()):
+            event_map[event] = event_counter
+            print("event {} added to map".format(event))
+            event_counter += 1
+        event_idx = event_map[event]
+
+    print("done setting up the matrix")    
+    
 if __name__ == '__main__':
     print("program loaded, starting pre-processing")
-    pre_processing_part2()
+    pre_processing_part_2()
     print("done with pre-processing, starting normalization")
-    normalizing()
+#    normalizing()
     # run()
