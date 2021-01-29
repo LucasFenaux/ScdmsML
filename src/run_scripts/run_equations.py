@@ -83,6 +83,62 @@ def level_1_multiple_loader(batch_size=64, num_workers=1, sequence_length=150, p
     return train_loader, test_loader
 
 
+def test_level_1_multiple_loader(batch_size=64, num_workers=1, sequence_length=150, pin_memory=False):
+    """ Generates sequence of numbers based on some equations with some truth values """
+    # Select a random number as seed for the algorithm
+    r = random.randint(1, 100)
+
+    # Now we generate n true samples and n false samples
+    n = 1000
+    # With sequence length of l
+    l = sequence_length
+    samples = []
+    labels = []
+    for i in range(n):
+        sample = []
+        label = None
+        if random.randint(0, 1) == 0:
+            # We create a sample with false label
+            # We make sure it has at least 1 element that is not a multiple of r
+            num = r*random.randint(1, 100) + 1
+            rand_idx = random.randint(0, 149)
+            for j in range(l):
+                sample.append(np.array(random.randint(1, 10000)))
+            sample[rand_idx] = np.array([num])
+            label = 0
+        else:
+            for j in range(l):
+                # We create a sequence where all the numbers are multiples of r
+                k = random.randint(1, 100)
+                sample.append(np.array(k*r))
+            label = 1
+        sample = np.array(sample)
+        samples.append(np.array([sample, sample]))
+        labels.append(label)
+    samples = np.array(samples)
+    labels = np.array(labels)
+
+    train_data, test_data, train_targets, test_targets = train_test_split(samples, labels)
+    print("train data shape {}".format(np.shape(train_data)))
+    print("test data shape {}".format(np.shape(test_data)))
+    train_data = torch.Tensor(train_data)
+    train_targets = torch.Tensor(train_targets).to(torch.int64)
+    train_targets = torch.nn.functional.one_hot(train_targets).to(torch.float)
+    test_data = torch.Tensor(test_data)
+    test_targets = torch.Tensor(test_targets).to(torch.int64)
+    test_targets = torch.nn.functional.one_hot(test_targets).to(torch.float)
+
+    train_dataset = TensorDataset(train_data, train_targets)
+    train_sampler = RandomSampler(train_dataset)
+    train_loader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size, num_workers=num_workers,
+                              pin_memory=pin_memory)
+    test_dataset = TensorDataset(test_data, test_targets)
+    test_sampler = SequentialSampler(test_dataset)
+    test_loader = DataLoader(test_dataset, sampler=test_sampler, batch_size=batch_size, num_workers=num_workers,
+                             pin_memory=pin_memory)
+    return train_loader, test_loader
+
+
 def ff_level_1_multiple_loader(batch_size=64, num_workers=1, sequence_length=150, pin_memory=False):
     """ Generates sequence of numbers based on some equations with some truth values """
     # Select a random number as seed for the algorithm
@@ -360,4 +416,5 @@ def run_ff():
 
 
 if __name__ == '__main__':
-    run_ff()
+    # run_ff()
+    run_lstm()

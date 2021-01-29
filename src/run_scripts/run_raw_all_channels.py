@@ -12,7 +12,9 @@ import torch
 import torch.optim as optim
 import logging
 logging.basicConfig(filename='./raw_data_log.log', level=logging.WARNING)
-
+from queue import Queue
+from threading import Thread
+import multiprocessing as mp
 import pickle
 from src.utils import get_all_events
 from src.utils.data_loading import torch_raw_data_loader
@@ -58,7 +60,7 @@ def pre_processing():
     np.save("../../data/raw_events/pre_processed_data.npy", matrix)
 
 
-def pre_processing_part_2():
+def deprecated_pre_processing_part_2():
     """This pre-processing part however is different from the run_raw_1_att one"""
     print("start loading")
     data = np.load("../../data/raw_events/pre_processed_data.npy")
@@ -120,6 +122,120 @@ def pre_processing_part_2():
     # save the index map for label reconstruction
     with open('../../data/raw_events/index_map.pkl', 'wb') as f:
         pickle.dump(index_map, f, pickle.HIGHEST_PROTOCOL)
+
+
+def check_format(data):
+    """ Function to check the format of the pre-processed data after the first round of pre-processing
+    and verify that it is in the format where we have for each event number, all 8 channel outputs in a row in the same
+    order across all events"""
+    n = np.shape(data)[0]
+    all_event_numbers = data[:, 0]
+    all_channel_numbers = data[:, 1]
+    channels = []
+    first_event = None
+    current_event = None
+    shape_matches = False
+    for i in range(n):
+        if first_event is None:
+            first_event = all_event_numbers[i]
+            current_event = first_event
+        if current_event != all_event_numbers[i] and i % len(channels) != 0:
+            logging.ERROR("data is not in the correct format, event numbers are not order properly, aborting")
+            print("data is not in the correct format, event numbers are not order properly, aborting")
+            return False, channels, all_channel_numbers[i], i % 8
+        if first_event == current_event:
+            channels.append(all_channel_numbers[i])
+        elif not shape_matches:
+            if i % len(channels) != 0:
+                logging.ERROR("data is missing some rows")
+                print("data is missing some rows")
+                return False, [], 0, 0
+            else:
+                shape_matches = True
+        if channels[i%8] != all_channel_numbers[i]:
+            logging.ERROR("data is not in the correct format, channel numbers are not order properly, aborting")
+            print("data is not in the correct format, channel numbers are not order properly, aborting")
+            return False, channels, all_channel_numbers[i], i % 8
+
+    # if we get here, it means the data is in the correct format
+    return True, channels, -1, -1
+
+
+def multi_process_pre_procesing_part_2():
+    """ Supposed to do the same thing as the slow pre processing part2, however checks for the format first
+    in order to speed up the process. Does require the proper format however"""
+    # First check the format
+    print("start loading")
+    data = np.load("../../data/raw_events/pre_processed_data.npy")
+    print("loaded intial pre-processed data")
+    is_valid, channel_order, a, b = check_format(data)
+    if not is_valid:
+        print(str(channel_order), str(a), str(b))
+        return
+
+    def multi_process_pre(submatrix_indices):
+        submatrix = data[submatrix_indices[0]:submatrix_indices[1], :]
+        all_event_numbers = submatrix[:, 0]
+        submatrix = np.delete(submatrix, 0, axis=1)  # remove ev
+        submatrix = np.delete(submatrix, 0, axis=1)  # remove channel num
+        n = int(np.shape(submatrix)[0]/8) # we shouldn't get any rounding error as the check format checks if we have the correct shape
+        submatrix_3D = []
+        event_numbers = []
+        for i in range(n):
+            a = submatrix[i:i+8, :]
+            a = np.transpose(a)
+            submatrix_3D.append(a)
+            event_numbers.append(all_event_numbers[8*i])
+        submatrix_3D = np.array(submatrix_3D)
+        assert np.shape(submatrix_3D)[0] == len(event_numbers)
+        return submatrix_3D, event_numbers
+
+    class Worker(Thread):
+        def __init__(self, input_queue, output_queue):
+            Thread.__init__(self)
+            self.input_queue = input_queue
+            self.output_queue = output_queue
+
+        def run(self):
+            while True:
+                indices = self.input_queue.get()
+                try:
+                    out_submatrix_3D, out_event_numbers = multi_process_pre(indices)
+                    self.output_queue.put((out_submatrix_3D, out_event_numbers))
+                finally:
+                    self.input_queue.task_done()
+
+    in_queue = Queue()
+    out_queue = Queue()
+    m = mp.cpu_count()
+    for x in range(m):
+        worker = Worker(in_queue, out_queue)
+        worker.daemon = True
+        worker.start()
+    rows = np.shape(data)[0]
+    chunk_size = int(rows/m)
+    for y in range(m):
+        # create the indices
+        if y == m - 1:
+            in_queue.put((y*chunk_size, rows))
+        else:
+            in_queue.put((y*chunk_size, (y+1)*chunk_size))
+
+    # Now we pick up the finished work and reconstruct the array
+    data_3D = None
+    events = None
+    for z in range(m):
+        sub_3D, evs = out_queue.get()
+        if data_3D is None and events is None:
+            data_3D = sub_3D
+            events = evs
+        else:
+            data_3D = np.concatenate(data_3D, sub_3D, axis=0)
+            events.extend(evs)
+        out_queue.task_done()
+    events = np.array(events)
+    np.save("../../data/raw_events/pre_processed_data_3D_all_attribute.npy", data_3D)
+    np.save("../../data/raw_events/pre_processed_data_events_all_attributes.npy", events)
 
 
 def normalizing():

@@ -374,6 +374,7 @@ def torch_all_channels_raw_data_loader(batch_size=256,num_workers=1, pin_memory=
     num_scatter_save_path = os.path.join("../results/files/pca_numscatters.txt")
     data, targets, target_evs = all_channels_raw_data_loader(
         "/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_normalized_data_3D_all_attribute.npy",
+        "/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/pre_processed_data_events_all_attributes.npy",
         "/home/fenauxlu/projects/rrg-mdiamond/data/Soudan/DMC_MATLAB_V1-4_PhotoneutronSb/Input_SuperSim/PhotoNeutronDMC_InitialTest10K_jswfix.mat",
         num_scatter_save_path)
     print(np.min(data), np.max(data))
@@ -404,21 +405,20 @@ def torch_all_channels_raw_data_loader(batch_size=256,num_workers=1, pin_memory=
     return train_loader, test_loader
 
 
-def all_channels_raw_data_loader(data_file, init_path, num_scatter_save_path, det=14):
+def all_channels_raw_data_loader(data_file, event_file, init_path, num_scatter_save_path, det=14):
     all_data = np.load(data_file)
     scatters, single_scatter = get_num_scatters(init_path, save_path=num_scatter_save_path, det=det)
     evs = list(single_scatter.keys())
     targets = []
-    with open('/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/index_map.pkl', 'wb') as f:
-        all_indices = pickle.load(f)
-
-    all_event_numbers = list(all_indices.values())
+    # with open('/home/fenauxlu/projects/rrg-mdiamond/fenauxlu/ScdmsML/data/raw_events/index_map.pkl', 'wb') as f:
+    #     all_indices = pickle.load(f)
+    all_event_numbers = np.load(event_file)
     target_event_numbers = []
     logging.info("data matrix shape {}".format(np.shape(all_data)))
     assert np.shape(all_data)[1] == 4096
 
     for i in range(np.shape(all_data)[0]):
-        ev = all_indices[i]
+        ev = all_event_numbers[i]
         if ev not in evs:
             logging.info("event number {} was not present in the init file and got deleted".format(ev))
             continue
