@@ -214,6 +214,8 @@ def multi_process_pre_procesing_part_2():
         worker.start()
     rows = np.shape(data)[0]
     chunk_size = int(rows/m)
+    while chunk_size%8 != 0:
+        chunk_size -= 1  # so that we cut on the event separation line and not before
     for y in range(m):
         # create the indices
         if y == m - 1:
