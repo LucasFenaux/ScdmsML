@@ -348,7 +348,7 @@ def test_function():
     
 if __name__ == '__main__':
     print("program loaded, starting pre-processing")
-    pre_processing_part_2()
+    multi_process_pre_procesing_part_2()
     print("done with pre-processing, starting normalization")
 #    normalizing()
     # run()
