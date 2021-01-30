@@ -17,7 +17,7 @@ from threading import Thread
 import multiprocessing as mp
 import pickle
 from src.utils import get_all_events
-from src.utils.data_loading import torch_raw_data_loader
+from src.utils.data_loading import torch_all_channels_raw_data_loader
 from src.models.model import LSTMClassifier
 from torch.utils.tensorboard import SummaryWriter
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
@@ -232,7 +232,7 @@ def multi_process_pre_procesing_part_2():
             data_3D = sub_3D
             events = evs
         else:
-            data_3D = np.concatenate(data_3D, sub_3D, axis=0)
+            data_3D = np.concatenate((data_3D, sub_3D), axis=0)
             events.extend(evs)
         out_queue.task_done()
     events = np.array(events)
@@ -284,20 +284,21 @@ def setup_event_handler(trainer, evaluator, train_loader, test_loader):
 
 def run():
     num_workers = 8
-    batch_size = 512
+    batch_size = 256
 
     input_size = 8
     hidden_size = 20
 
     epochs = 500
-    learning_rate = 0.005
+    learning_rate = 0.01
+    dropout_rate=0.1
 
     assert torch.cuda.is_available()
 
-    nn = LSTMClassifier(input_size, hidden_size, label_size=1)
+    nn = LSTMClassifier(input_size, hidden_size, label_size=1, device=device, dropout_rate=dropout_rate)
     nn = nn.to(device)
-    train_loader, test_loader = torch_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
-    optimizer = optim.Adam(nn.parameters(), lr=learning_rate, weight_decay=0.001)
+    train_loader, test_loader = torch_all_channels_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate, weight_decay=0.0001)
 
     criterion = torch.nn.BCELoss()
 
@@ -349,8 +350,8 @@ def test_function():
     print("done setting up the matrix")    
     
 if __name__ == '__main__':
-    print("program loaded, starting pre-processing")
-    multi_process_pre_procesing_part_2()
-    print("done with pre-processing, starting normalization")
-#    normalizing()
-    # run()
+    #print("program loaded, starting pre-processing")
+    #multi_process_pre_procesing_part_2()
+    #print("done with pre-processing, starting normalization")
+    #normalizing()
+     run()
