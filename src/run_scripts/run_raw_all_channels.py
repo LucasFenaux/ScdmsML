@@ -29,6 +29,7 @@ log_dir = get_tensorboard_log_dir()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 pin_memory = (device.type == "cuda")
 print("done with imports")
+from functools import partial
 
 # Only run it once to preprocess the data
 def pre_processing():
@@ -295,7 +296,7 @@ def run():
 
     assert torch.cuda.is_available()
 
-    nn = LSTMClassifier(input_size, hidden_size, label_size=1, device=device, dropout_rate=dropout_rate)
+    nn = LSTMClassifier(input_size, hidden_size, label_size=2, device=device, dropout_rate=dropout_rate)
     nn = nn.to(device)
     train_loader, test_loader = torch_all_channels_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
     optimizer = optim.Adam(nn.parameters(), lr=learning_rate, weight_decay=0.0001)
@@ -304,8 +305,13 @@ def run():
 
     trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
 
+    def ot_func(output):
+        y_pred, y = output
+        y_pred = torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float)
+        return (y_pred, y)
+
     val_metrics = {
-        "accuracy": Accuracy(),
+        "accuracy": Accuracy(output_transform=partial(ot_func)),
         "nll": Loss(criterion)
     }
     evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device)
