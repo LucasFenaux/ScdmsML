@@ -20,9 +20,14 @@ class LSTMClassifier(nn.Module):
     def initialize_weights(self):
         for name, param in self.lstm.named_parameters():
             if 'bias' in name:
-                nn.init.constant(param, 0.0)
+                nn.init.constant_(param, 0.0001)
             elif 'weight' in name:
-                nn.init.xavier_normal(param)
+                nn.init.xavier_normal_(param)
+        for name, param in self.hidden2label.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(param, 0.0001)
+            elif 'weight' in name:
+                nn.init.xavier_normal_(param)
 
     def forward(self, x):
 
@@ -59,19 +64,24 @@ class BiLSTMClassifier(nn.Module):
     def initialize_weights(self):
         for name, param in self.lstm.named_parameters():
             if 'bias' in name:
-                nn.init.constant(param, 0.0)
+                nn.init.constant_(param, 0.0001)
             elif 'weight' in name:
-                nn.init.xavier_normal(param)
+                nn.init.xavier_normal_(param)
         for name, param in self.forwards.named_parameters():
             if 'bias' in name:
-                nn.init.constant(param, 0.0)
+                nn.init.constant_(param, 0.0001)
             elif 'weight' in name:
-                nn.init.xavier_normal(param)
+                nn.init.xavier_normal_(param)
         for name, param in self.backwards.named_parameters():
             if 'bias' in name:
-                nn.init.constant(param, 0.0)
+                nn.init.constant_(param, 0.0001)
             elif 'weight' in name:
-                nn.init.xavier_normal(param)
+                nn.init.xavier_normal_(param)
+        for name, param in self.hidden2label.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(param, 0.0001)
+            elif 'weight' in name:
+                nn.init.xavier_normal_(param)
 
     def forward(self, x):
         # Initializing hidden states
@@ -123,9 +133,9 @@ class FFClassifier(nn.Module):
     def initialize_weights(self):
         for name, param in self.nn.named_parameters():
             if 'bias' in name:
-                nn.init.constant(param, 0.0)
+                nn.init.constant_(param, 0.0002)
             elif 'weight' in name:
-                nn.init.xavier_normal(param)
+                nn.init.xavier_normal_(param)
 
     def forward(self, x):
         return self.nn(x)

@@ -1,0 +1,17 @@
+Regular LSTM - LSTM Cell
+V1.2
+Normalized Data: True
+run number: 61384998
+data_loading : all_channels
+
+num_workers = 8
+batch_size = 256
+
+input_size = 8
+hidden_size = 20
+
+epochs = 500
+learning_rate = 0.01
+weight_decay=0.0001
+dropout_rate=0.1
+criterion = torch.nn.BCELoss()
