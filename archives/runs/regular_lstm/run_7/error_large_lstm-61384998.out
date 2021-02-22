@@ -1,0 +1,4 @@
+/project/6049244/fenauxlu/ScdmsML/src/models/model.py:25: UserWarning: nn.init.xavier_normal is now deprecated in favor of nn.init.xavier_normal_.
+  nn.init.xavier_normal(param)
+/project/6049244/fenauxlu/ScdmsML/src/models/model.py:23: UserWarning: nn.init.constant is now deprecated in favor of nn.init.constant_.
+  nn.init.constant(param, 0.0)
