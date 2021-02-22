@@ -18,7 +18,7 @@ import multiprocessing as mp
 import pickle
 from src.utils import get_all_events
 from src.utils.data_loading import torch_all_channels_raw_data_loader
-from src.models.model import LSTMClassifier
+from src.models.model import LSTMClassifier, CNN_LSTM_Classifier
 from torch.utils.tensorboard import SummaryWriter
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
 from ignite.metrics import Accuracy, Loss
@@ -291,7 +291,7 @@ def run():
     hidden_size = 20
 
     epochs = 500
-    learning_rate = 0.01
+    learning_rate = 0.001
     dropout_rate=0.1
 
     assert torch.cuda.is_available()
@@ -354,10 +354,50 @@ def test_function():
         event_idx = event_map[event]
 
     print("done setting up the matrix")    
-    
+
+
+def run_cnn_lstm():
+    num_workers = 8
+    batch_size = 256
+
+    input_size = 8
+    hidden_size = 200
+
+    epochs = 1000
+    learning_rate = 0.001
+    dropout_rate = 0.1
+
+    assert torch.cuda.is_available()
+
+    nn = CNN_LSTM_Classifier(input_size, hidden_size, label_size=2, device=device, dropout_rate=dropout_rate)
+    nn = nn.to(device)
+    train_loader, test_loader = torch_all_channels_raw_data_loader(batch_size=batch_size, num_workers=num_workers, pin_memory=pin_memory)
+    optimizer = optim.Adam(nn.parameters(), lr=learning_rate, weight_decay=0.0001)
+
+    criterion = torch.nn.BCELoss()
+
+    trainer = create_supervised_trainer(nn, optimizer, criterion, device=device)
+
+    def ot_func(output):
+        y_pred, y = output
+        y_pred = torch.nn.functional.one_hot(torch.max(y_pred, 1)[1], num_classes=2).to(torch.float)
+        return (y_pred, y)
+
+    val_metrics = {
+        "accuracy": Accuracy(output_transform=partial(ot_func)),
+        "nll": Loss(criterion)
+    }
+    evaluator = create_supervised_evaluator(nn, metrics=val_metrics, device=device)
+
+    setup_event_handler(trainer, evaluator, train_loader, test_loader)
+
+    trainer.run(train_loader, max_epochs=epochs)
+
+
 if __name__ == '__main__':
     #print("program loaded, starting pre-processing")
     #multi_process_pre_procesing_part_2()
     #print("done with pre-processing, starting normalization")
     #normalizing()
-     run()
+     # run()
+    run_cnn_lstm()

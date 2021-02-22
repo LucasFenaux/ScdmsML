@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-
+import numpy as np
 
 class LSTMClassifier(nn.Module):
     """
@@ -139,3 +139,74 @@ class FFClassifier(nn.Module):
 
     def forward(self, x):
         return self.nn(x)
+
+
+class CNN_LSTM_Classifier(nn.Module):
+    """
+    Version V0.0
+    CNN+LSTM classifier using ConvNet -> LSTMCell -> FFNetwork structure
+    """
+    def __init__(self, input_dim, hidden_dim, label_size, device=torch.device("cuda"), dropout_rate=0.1):
+        super().__init__()
+        self.convnet1 = nn.Sequential(nn.Conv1d(in_channels=input_dim, out_channels=input_dim, kernel_size=4,
+                                               padding=2), nn.MaxPool1d(kernel_size=2),
+                                     nn.BatchNorm1d(input_dim), nn.ReLU()) # here to reduce noice
+        self.convnet2 = nn.Sequential(nn.Conv1d(in_channels=input_dim, out_channels=2*input_dim, kernel_size=4,
+                                               padding=2), nn.MaxPool1d(kernel_size=2, stride=2),
+                                     nn.BatchNorm1d(2*input_dim), nn.ReLU())  # start extracting features and reduce size
+                                                                              # ro reduce complexity for lstm
+        self.convnet3 = nn.Sequential(nn.Conv1d(in_channels=2*input_dim, out_channels=4*input_dim, kernel_size=4,
+                                               padding=2), nn.MaxPool1d(kernel_size=2),
+                                     nn.BatchNorm1d(4*input_dim), nn.ReLU())
+        self.convnet4 = nn.Sequential(nn.Conv1d(in_channels=4*input_dim, out_channels=8*input_dim, kernel_size=4,
+                                               padding=2), nn.BatchNorm1d(8*input_dim), nn.ReLU())
+        self.convnet5 = nn.Conv1d(in_channels=8*input_dim, out_channels=16*input_dim, kernel_size=4, padding=2)
+        self.lstm = nn.LSTMCell(16*input_dim, hidden_dim)
+        self.hiddentoff = nn.Linear(hidden_dim, int(np.sqrt(hidden_dim)))
+        self.relu = nn.ReLU()
+        self.fftolabel = nn.Linear(int(np.sqrt(hidden_dim)), label_size)
+        self.hidden_dim = hidden_dim
+        self.sigmoid = nn.Sigmoid()
+        self.dropout = nn.Dropout(dropout_rate)
+        self.device = device
+        self.initialize_weights()
+
+    def initialize_weights(self):
+        for name, param in self.lstm.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(param, 0.0001)
+            elif 'weight' in name:
+                nn.init.xavier_normal_(param)
+        for name, param in self.hiddentoff.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(param, 0.0001)
+            elif 'weight' in name:
+                nn.init.xavier_normal_(param)
+        for name, param in self.fftolabel.named_parameters():
+            if 'bias' in name:
+                nn.init.constant_(param, 0.0001)
+            elif 'weight' in name:
+                nn.init.xavier_normal_(param)
+
+    def forward(self, x):
+        x = torch.reshape(x, (x.size()[0], x.size()[2], x.size()[1]))
+        x = self.convnet1(x)
+        x = self.convnet2(x)
+        x = self.convnet3(x)
+        x = self.convnet4(x)
+        x = self.convnet5(x)
+        x = torch.reshape(x, (x.size()[0], x.size()[2], x.size()[1]))
+        x = self.dropout(x)
+        hs = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
+        cs = torch.zeros(x.size(0), self.hidden_dim).to(self.device)
+
+        for i in range(x.size()[1]):
+            hs, cs = self.lstm(x[:, i], (hs, cs))
+            # hs = self.dropout(hs)
+            # cs = self.dropout(cs)
+
+        hs = self.dropout(hs)
+        hs = self.hiddentoff(hs)
+
+        # return self.sigmoid(self.hidden2label(hs.reshape(x.shape[0], -1)))
+        return self.sigmoid(self.fftolabel(hs))
