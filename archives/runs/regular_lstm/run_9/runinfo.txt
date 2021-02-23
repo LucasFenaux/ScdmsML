@@ -1,17 +1,17 @@
-CNN_LSTM
-V0.0
+Regular LSTM - LSTM Cell
+V1.3
 Normalized Data: True
-run number: 62430565
-data_loading: all_channels
+run number: 62433141
+data_loading : all_channels
 
 num_workers = 8
-batch_size = 2048
+batch_size = 256
 
 input_size = 8
 hidden_size = 200
 
 epochs = 1000
 learning_rate = 0.001
-dropout_rate = 0.3
+dropout_rate=0.1
 weight_decay=0.0001
 criterion = torch.nn.BCELoss()
