@@ -158,7 +158,7 @@ class FFClassifier(nn.Module):
 
 class CNN_LSTM_Classifier(nn.Module):
     """
-    Version V0.0
+    Version V0.1
     CNN+LSTM classifier using ConvNet -> LSTMCell -> FFNetwork structure
     """
     def __init__(self, input_dim, hidden_dim, label_size, device=torch.device("cuda"), dropout_rate=0.1):
@@ -221,6 +221,7 @@ class CNN_LSTM_Classifier(nn.Module):
             # cs = self.dropout(cs)
 
         hs = self.dropout(hs)
+        hs = self.relu(hs)
         hs = self.hiddentoff(hs)
 
         # return self.sigmoid(self.hidden2label(hs.reshape(x.shape[0], -1)))
