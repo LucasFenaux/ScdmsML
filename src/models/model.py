@@ -221,8 +221,7 @@ class CNN_LSTM_Classifier(nn.Module):
             # cs = self.dropout(cs)
 
         hs = self.dropout(hs)
-        hs = self.relu(hs)
         hs = self.hiddentoff(hs)
-
+        hs = self.relu(hs)
         # return self.sigmoid(self.hidden2label(hs.reshape(x.shape[0], -1)))
         return self.sigmoid(self.fftolabel(hs))
