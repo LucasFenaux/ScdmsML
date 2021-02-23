@@ -288,9 +288,9 @@ def run():
     batch_size = 256
 
     input_size = 8
-    hidden_size = 20
+    hidden_size = 200
 
-    epochs = 500
+    epochs = 1000
     learning_rate = 0.001
     dropout_rate=0.1
 
@@ -358,14 +358,14 @@ def test_function():
 
 def run_cnn_lstm():
     num_workers = 8
-    batch_size = 256
+    batch_size = 2048
 
     input_size = 8
-    hidden_size = 200
+    hidden_size = 50
 
     epochs = 1000
     learning_rate = 0.001
-    dropout_rate = 0.1
+    dropout_rate = 0.3
 
     assert torch.cuda.is_available()
 
@@ -399,5 +399,5 @@ if __name__ == '__main__':
     #multi_process_pre_procesing_part_2()
     #print("done with pre-processing, starting normalization")
     #normalizing()
-     # run()
-    run_cnn_lstm()
+    run()
+    #run_cnn_lstm()
