@@ -173,10 +173,13 @@ class CNN_LSTM_Classifier(nn.Module):
         self.convnet3 = nn.Sequential(nn.Conv1d(in_channels=2*input_dim, out_channels=4*input_dim, kernel_size=4,
                                                padding=2), nn.MaxPool1d(kernel_size=2),
                                      nn.BatchNorm1d(4*input_dim), nn.ReLU())
-        self.convnet4 = nn.Sequential(nn.Conv1d(in_channels=4*input_dim, out_channels=8*input_dim, kernel_size=4,
-                                               padding=2), nn.BatchNorm1d(8*input_dim), nn.ReLU())
-        self.convnet5 = nn.Conv1d(in_channels=8*input_dim, out_channels=16*input_dim, kernel_size=4, padding=2)
-        self.lstm = nn.LSTMCell(16*input_dim, hidden_dim)
+        # removed to reduce model complexity to try and limit overfitting
+        # self.convnet4 = nn.Sequential(nn.Conv1d(in_channels=4*input_dim, out_channels=8*input_dim, kernel_size=4,
+        #                                        padding=2), nn.BatchNorm1d(8*input_dim), nn.ReLU())
+        # self.convnet5 = nn.Conv1d(in_channels=8*input_dim, out_channels=16*input_dim, kernel_size=4, padding=2)
+        # self.lstm = nn.LSTMCell(16*input_dim, hidden_dim)
+        self.convnet5 = nn.Conv1d(in_channels=4*input_dim, out_channels=8*input_dim, kernel_size=4, padding=2)
+        self.lstm = nn.LSTMCell(8*input_dim, hidden_dim)
         self.hiddentoff = nn.Linear(hidden_dim, int(np.sqrt(hidden_dim)))
         self.relu = nn.ReLU()
         self.fftolabel = nn.Linear(int(np.sqrt(hidden_dim)), label_size)
@@ -208,7 +211,7 @@ class CNN_LSTM_Classifier(nn.Module):
         x = self.convnet1(x)
         x = self.convnet2(x)
         x = self.convnet3(x)
-        x = self.convnet4(x)
+        # x = self.convnet4(x)
         x = self.convnet5(x)
         x = torch.reshape(x, (x.size()[0], x.size()[2], x.size()[1]))
         x = self.dropout(x)
