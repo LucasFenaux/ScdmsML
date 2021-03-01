@@ -1,0 +1,17 @@
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/cvmfs/soft.computecanada.ca/easybuild/software/2017/Core/python/3.6.3/lib/python3.6/threading.py", line 916, in _bootstrap_inner
+    self.run()
+  File "/project/6049244/fenauxlu/ScdmsML/venv/lib/python3.6/site-packages/tensorboard/summary/writer/event_file_writer.py", line 238, in run
+    self._record_writer.write(data)
+  File "/project/6049244/fenauxlu/ScdmsML/venv/lib/python3.6/site-packages/tensorboard/summary/writer/record_writer.py", line 40, in write
+    self._writer.write(header + header_crc + data + footer_crc)
+  File "/project/6049244/fenauxlu/ScdmsML/venv/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 531, in write
+    self.fs.append(self.filename, file_content, self.binary_mode)
+  File "/project/6049244/fenauxlu/ScdmsML/venv/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 154, in append
+    self._write(filename, file_content, "ab" if binary_mode else "a")
+  File "/project/6049244/fenauxlu/ScdmsML/venv/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/io/gfile.py", line 158, in _write
+    with io.open(filename, mode, encoding=encoding) as f:
+FileNotFoundError: [Errno 2] No such file or directory: b'../results/files/tb_logs_3/events.out.tfevents.1614041075.cdr2503.int.cedar.computecanada.ca.57172.0'
+
+slurmstepd: error: *** JOB 62433141 ON cdr2503 CANCELLED AT 2021-02-26T16:38:48 DUE TO TIME LIMIT ***
