@@ -158,19 +158,19 @@ class FFClassifier(nn.Module):
 
 class CNN_LSTM_Classifier(nn.Module):
     """
-    Version V0.2
+    Version V0.3
     CNN+LSTM classifier using ConvNet -> LSTMCell -> FFNetwork structure
     """
     def __init__(self, input_dim, hidden_dim, label_size, device=torch.device("cuda"), dropout_rate=0.1):
         super().__init__()
-        self.convnet1 = nn.Sequential(nn.Conv1d(in_channels=input_dim, out_channels=input_dim, kernel_size=4,
-                                               padding=2), nn.MaxPool1d(kernel_size=2),
+        self.convnet1 = nn.Sequential(nn.Conv1d(in_channels=input_dim, out_channels=input_dim, kernel_size=7,
+                                               padding=2), nn.MaxPool1d(kernel_size=4),
                                      nn.BatchNorm1d(input_dim), nn.ReLU()) # here to reduce noice
-        self.convnet2 = nn.Sequential(nn.Conv1d(in_channels=input_dim, out_channels=2*input_dim, kernel_size=4,
-                                               padding=2), nn.MaxPool1d(kernel_size=2, stride=2),
+        self.convnet2 = nn.Sequential(nn.Conv1d(in_channels=input_dim, out_channels=2*input_dim, kernel_size=5,
+                                               padding=2), nn.MaxPool1d(kernel_size=4),
                                      nn.BatchNorm1d(2*input_dim), nn.ReLU())  # start extracting features and reduce size
                                                                               # ro reduce complexity for lstm
-        self.convnet3 = nn.Sequential(nn.Conv1d(in_channels=2*input_dim, out_channels=4*input_dim, kernel_size=4,
+        self.convnet3 = nn.Sequential(nn.Conv1d(in_channels=2*input_dim, out_channels=4*input_dim, kernel_size=3,
                                                padding=2), nn.MaxPool1d(kernel_size=2),
                                      nn.BatchNorm1d(4*input_dim), nn.ReLU())
         # removed to reduce model complexity to try and limit overfitting
@@ -178,8 +178,8 @@ class CNN_LSTM_Classifier(nn.Module):
         #                                        padding=2), nn.BatchNorm1d(8*input_dim), nn.ReLU())
         # self.convnet5 = nn.Conv1d(in_channels=8*input_dim, out_channels=16*input_dim, kernel_size=4, padding=2)
         # self.lstm = nn.LSTMCell(16*input_dim, hidden_dim)
-        self.convnet5 = nn.Conv1d(in_channels=4*input_dim, out_channels=8*input_dim, kernel_size=4, padding=2)
-        self.lstm = nn.LSTMCell(8*input_dim, hidden_dim)
+        self.convnet5 = nn.Conv1d(in_channels=4*input_dim, out_channels=4*input_dim, kernel_size=4, padding=2)
+        self.lstm = nn.LSTMCell(4*input_dim, hidden_dim)
         self.hiddentoff = nn.Linear(hidden_dim, int(np.sqrt(hidden_dim)))
         self.relu = nn.ReLU()
         self.fftolabel = nn.Linear(int(np.sqrt(hidden_dim)), label_size)
