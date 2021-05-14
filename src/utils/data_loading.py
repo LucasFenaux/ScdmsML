@@ -379,7 +379,7 @@ def torch_all_channels_raw_data_loader(batch_size=256,num_workers=1, pin_memory=
         num_scatter_save_path)
     print(np.min(data), np.max(data))
     train_data, test_data, train_targets, test_targets = train_test_split(data,
-                                                                          targets)  # can add target_evs in there if you want to keep track of them as well
+                                                                           targets)  # can add target_evs in there if you want to keep track of them as well
 
     print("train data shape {}".format(np.shape(train_data)))
     print("test data shape {}".format(np.shape(test_data)))
